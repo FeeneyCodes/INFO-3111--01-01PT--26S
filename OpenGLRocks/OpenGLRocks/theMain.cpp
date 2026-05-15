@@ -23,11 +23,47 @@ typedef struct Vertex
     glm::vec3 col;      // vec3 col;
 } Vertex;
 
-static const Vertex vertices[6] =
+static const Vertex vertices[24] =
 {
-    { { -0.6f, -0.4f }, { 1.0f, 0.0f, 0.0f } },
-    { {  0.6f, -0.4f }, { 0.0f, 1.0f, 0.0f } },
-    { {  0.0f,  0.6f }, { 0.0f, 0.0f, 1.0f } }
+    // Triangle 1 - right lower
+    { {  3.0f,  0.0f }, { 1.0f, 1.0f, 1.0f } },
+    { {  1.2f, -1.2f }, { 0.0f, 1.0f, 0.0f } },
+    { {  0.0f,  0.0f }, { 1.0f, 0.0f, 1.0f } },
+
+    // Triangle 2 - bottom right
+    { {  1.2f, -1.2f }, { 1.0f, 0.5f, 0.0f } },
+    { {  0.0f, -3.0f }, { 0.0f, 1.0f, 1.0f } },
+    { {  0.0f,  0.0f }, { 1.0f, 0.0f, 1.0f } },
+
+    // Triangle 3 - bottom left
+    { {  0.0f, -3.0f }, { 0.0f, 0.0f, 1.0f } },
+    { { -1.2f, -1.2f }, { 1.0f, 1.0f, 0.0f } },
+    { {  0.0f,  0.0f }, { 1.0f, 0.0f, 1.0f } },
+
+    // Triangle 4 - left lower
+    { { -1.2f, -1.2f }, { 1.0f, 1.0f, 1.0f } },
+    { { -3.0f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
+    { {  0.0f,  0.0f }, { 1.0f, 0.0f, 1.0f } },
+
+    // Triangle 5 - left upper
+    { { -3.0f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
+    { { -1.2f,  1.2f }, { 0.0f, 1.0f, 0.0f } },
+    { {  0.0f,  0.0f }, { 1.0f, 0.0f, 1.0f } },
+
+    // Triangle 6 - top left
+    { { -1.2f,  1.2f }, { 1.0f, 0.5f, 0.0f } },
+    { {  0.0f,  3.0f }, { 0.0f, 1.0f, 1.0f } },
+    { {  0.0f,  0.0f }, { 1.0f, 0.0f, 1.0f } },
+
+    // Triangle 7 - top right
+    { {  0.0f,  3.0f }, { 0.0f, 0.0f, 1.0f } },
+    { {  1.2f,  1.2f }, { 1.0f, 1.0f, 0.0f } },
+    { {  0.0f,  0.0f }, { 1.0f, 0.0f, 1.0f } },
+
+    // Triangle 8 - right upper
+    { {  1.2f,  1.2f }, { 0.0f, 1.0f, 0.0f } },
+    { {  3.0f,  0.0f }, { 1.0f, 0.0f, 0.0f } },
+    { {  0.0f,  0.0f }, { 1.0f, 0.0f, 1.0f } }
 };
 
 static const char* vertex_shader_text =
@@ -172,7 +208,7 @@ int main(void)
         glUseProgram(program);
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
         glBindVertexArray(vertex_array);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 24);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
