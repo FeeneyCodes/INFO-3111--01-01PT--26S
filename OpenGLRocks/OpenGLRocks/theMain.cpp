@@ -19,17 +19,21 @@
 #include <stddef.h>
 #include <stdio.h>
 
+
 typedef struct Vertex
 {
-    glm::vec2 pos;      // vec2 pos;
-    glm::vec3 col;      // vec3 col;
+    glm::vec2 pos;      // vec2 pos;  position
+    glm::vec3 col;      // vec3 col;    colour
 } Vertex;
 
 static const Vertex vertices[6] =
-{
-    { { -0.6f, -0.4f }, { 1.0f, 0.0f, 0.0f } },
+{   //     X     Y         R      G     B  
+    { { -0.6f, -0.4f }, { 1.0f, 0.0f, 1.0f } },
     { {  0.6f, -0.4f }, { 0.0f, 1.0f, 0.0f } },
-    { {  0.0f,  0.6f }, { 0.0f, 0.0f, 1.0f } }
+    { {  0.0f,  0.6f }, { 0.0f, 0.0f, 1.0f } },
+    { { -0.6f + 2.0f, -0.4f }, { 1.0f, 0.0f, 0.0f } },
+    { {  0.6f + 2.0f, -0.4f }, { 0.0f, 1.0f, 0.0f } },
+    { {  0.0f + 2.0f,  0.6f }, { 0.0f, 0.0f, 1.0f } }
 };
 
 static const char* vertex_shader_text =
@@ -58,7 +62,7 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error: %s\n", description);
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -77,7 +81,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(640, 480, "OpenGL Triangle", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1024, 768, "I love OpenGL", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -125,7 +129,7 @@ int main(void)
     glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
         sizeof(Vertex), (void*)offsetof(Vertex, col));
 
-    while (!glfwWindowShouldClose(window))
+    while ( ! glfwWindowShouldClose(window) )
     {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
@@ -141,10 +145,9 @@ int main(void)
         
  //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
         glm::mat4 rotateZ = glm::rotate( glm::mat4(1.0f), 
-                                         (float)glfwGetTime(),         // Angle
+                                         0.0f, //(float)glfwGetTime(),         // Angle
                                          glm::vec3(0.0f, 0.0f, 1.0f));
             
-
  //       mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
  
         glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, eyeZValue);
@@ -172,9 +175,16 @@ int main(void)
         mvp = p * matView * m;
 
         glUseProgram(program);
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
+
+        glUniformMatrix4fv( mvp_location, 
+                            1, 
+                            GL_FALSE, 
+                            (const GLfloat*)&mvp);
+
         glBindVertexArray(vertex_array);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        //glPointSize(10.0f);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
