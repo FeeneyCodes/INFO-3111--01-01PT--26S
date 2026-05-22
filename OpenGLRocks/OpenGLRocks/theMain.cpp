@@ -27,6 +27,7 @@
 #include <fstream>      // File IO
 
 #include "cShaderManager/cShaderManager.h"
+#include "cVAOManager/cVAOManager.h"
 
 struct Vertex
 {
@@ -46,20 +47,23 @@ struct Vertex
 //};
 
 // Where our vertices are
-Vertex* pVertices = NULL;   // = new [numberpfVertices]
-unsigned long numberOfVertices = 0;
+//Vertex* pVerticesBunny = NULL;   // = new [numberpfVertices]
+//unsigned long numberOfVertices = 0;
 
 
 glm::vec3 g_eyePosition = glm::vec3(0.0f, 0.0f, -1.0f);   // Camera location or position
 glm::vec3 g_atPosition = glm::vec3(0.0f, 0.0f, 0.0f);// Looking "at" 
 glm::vec3 g_upAxis = glm::vec3(0.0f, +1.0f, 0.0f);// What's up
 
+//
+cVAOManager* g_pVAOManager = NULL;
+
 
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // Load a ply file and put it into the pVertice array
-void LoadAModelFromFile(std::string fileName);
+//void LoadAModelFromFile(std::string fileName);
 
 int main(void)
 {
@@ -98,22 +102,22 @@ int main(void)
 
     // Load the model
 //    LoadAModelFromFile("assets/models/mig29.ply");
-    LoadAModelFromFile("assets/models/de--lorean.ply");
+//    LoadAModelFromFile("assets/models/de--lorean.ply");
 
 
 
-    GLuint vertex_buffer;
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    //GLuint vertex_buffer;
+    //glGenBuffers(1, &vertex_buffer);
+    //glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 
-    unsigned long numberOfBytesInArray
-                = sizeof(Vertex) * numberOfVertices;
+    //unsigned long numberOfBytesInArray
+    //            = sizeof(Vertex) * numberOfVertices;
 
-    // Copy the array to the GPUs RAM
-    glBufferData( GL_ARRAY_BUFFER, 
-                  numberOfBytesInArray,     // sizeof(vertices),
-                  pVertices,                // vertices,
-                  GL_STATIC_DRAW);
+    //// Copy the array to the GPUs RAM
+    //glBufferData( GL_ARRAY_BUFFER, 
+    //              numberOfBytesInArray,     // sizeof(vertices),
+    //              pVertices,                // vertices,
+    //              GL_STATIC_DRAW);
 
 
     cShaderManager* pTheShaderManager = new cShaderManager();
@@ -126,16 +130,34 @@ int main(void)
 
     pTheShaderManager->setBasePath("assets/shaders/");
 
-    if ( ! pTheShaderManager->createProgramFromFile("SimpleShader",
-                                                    vertexShader,
-                                                    fragmentShader))
+    if (!pTheShaderManager->createProgramFromFile("SimpleShader",
+        vertexShader,
+        fragmentShader))
     {
         std::cout << "Shader error:" << pTheShaderManager->getLastError() << std::endl;
         return -1;
     }
-    
+
     // Get the shader program ID (for later)
     GLuint program = pTheShaderManager->getIDFromFriendlyName("SimpleShader");
+
+
+    // Load the models
+    ::g_pVAOManager = new cVAOManager();
+
+    ::g_pVAOManager->setBasePath("assets/models");
+
+    sModelDrawInfo carModel;
+    if (::g_pVAOManager->LoadModelIntoVAO("de--lorean.ply", carModel, program))
+    {
+        std::cout << "Loaded " << carModel.meshName << std::endl;
+        std::cout << "\t" << carModel.numberOfVertices << " vertices" << std::endl;
+    }
+    else
+    {
+        std::cout << "ERROR: Didn't load " << carModel.meshName << std::endl;
+    }
+
 
     //const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     //glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
@@ -157,32 +179,32 @@ int main(void)
     const GLint mvp_location = glGetUniformLocation(program, "MVP");
 
 
-    GLuint vertex_array;
-    glGenVertexArrays(1, &vertex_array);
+    //GLuint vertex_array;
+    //glGenVertexArrays(1, &vertex_array);
 
-    glBindVertexArray(vertex_array);
-    //struct Vertex
-    //{
-    //    glm::vec3 position;      // vec2 pos;  position
-    //    glm::vec3 colour;      // vec3 col;    colour
-    //};
-    const GLint vpos_location = glGetAttribLocation(program, "vPos");
+    //glBindVertexArray(vertex_array);
+    ////struct Vertex
+    ////{
+    ////    glm::vec3 position;      // vec2 pos;  position
+    ////    glm::vec3 colour;      // vec3 col;    colour
+    ////};
+    //const GLint vpos_location = glGetAttribLocation(program, "vPos");
 
-    glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer( vpos_location, 
-                           3, 
-                           GL_FLOAT, 
-                           GL_FALSE,
-                           sizeof(Vertex),      // 20
-                           (void*)offsetof(Vertex, position));
-    const GLint vcol_location = glGetAttribLocation(program, "vCol");
-    glEnableVertexAttribArray(vcol_location);
-    glVertexAttribPointer( vcol_location, 
-                           3, 
-                           GL_FLOAT, 
-                           GL_FALSE,
-                           sizeof(Vertex), 
-                           (void*)offsetof(Vertex, colour));
+    //glEnableVertexAttribArray(vpos_location);
+    //glVertexAttribPointer( vpos_location, 
+    //                       3, 
+    //                       GL_FLOAT, 
+    //                       GL_FALSE,
+    //                       sizeof(Vertex),      // 20
+    //                       (void*)offsetof(Vertex, position));
+    //const GLint vcol_location = glGetAttribLocation(program, "vCol");
+    //glEnableVertexAttribArray(vcol_location);
+    //glVertexAttribPointer( vcol_location, 
+    //                       3, 
+    //                       GL_FLOAT, 
+    //                       GL_FALSE,
+    //                       sizeof(Vertex), 
+    //                       (void*)offsetof(Vertex, colour));
 
     while ( ! glfwWindowShouldClose(window) )
     {
@@ -220,7 +242,7 @@ int main(void)
                                         ::g_upAxis);
 
         // projection matrix
-        p = glm::perspective( 60.0f,        // FOV
+        p = glm::perspective( glm::radians(60.0f),        // FOV 
                               (float)width / (float)height, // Aspect ratio
                               0.1f,            // Near plane
                               1000.0f);         // Far plane
@@ -244,9 +266,22 @@ int main(void)
 //        glBindVertexArray(vertex_array);
 
 //        glPointSize(10.0f);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 //        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
+//        glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
+
+        sModelDrawInfo modelToDraw;
+        if ( g_pVAOManager->FindDrawInfoByModelName("de--lorean.ply", modelToDraw) )
+        {
+            glBindVertexArray(modelToDraw.VAO_ID);
+
+            glDrawElements(GL_TRIANGLES, 
+                           modelToDraw.numberOfIndices, 
+                           GL_UNSIGNED_INT, 
+                           (void*)0);              // Starting index
+
+            glBindVertexArray(0);
+        }//if ( g_pVAOManager
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -276,70 +311,70 @@ int main(void)
 // Load a ply file and put it into the pVertice array
 //  Vertex* pVertices = NULL;   // = new [numberpfVertices]
 //  unsigned long numberOfVertices = 0;
-void LoadAModelFromFile(std::string fileName)
-{
-    std::ifstream theFile( fileName.c_str() );
-    if ( ! theFile.is_open() )
-    {
-        return;
-    }
-    // File is open
-
-    // Read until we hit "vertex"
-    std::string token;
-    while (theFile >> token)
-    {
-        if (token == "vertex")
-        {
-            break;
-        }
-    }
-    // Next thing is number of vertices in file
-    theFile >> numberOfVertices;
-
-    // Read until we hit "face"
-    while (theFile >> token)
-    {
-        if (token == "face")
-        {
-            break;
-        }
-    }
-    unsigned long numberOfFaces = 0;
-    theFile >> numberOfFaces;
-
-    // Read until we hit "end_header"
-    while (theFile >> token)
-    {
-        if (token == "end_header")
-        {
-            break;
-        }
-    }
-
-    // Allocate an array big enough to fit the vertices
-    // Vertex* pVertices = NULL;
-    pVertices = new Vertex[numberOfVertices];
-
-    // The next numberOfvertices rows are the vertices
-    for (unsigned int index = 0; index != numberOfVertices; index++)
-    {
-        theFile >> pVertices[index].position.x;
-        theFile >> pVertices[index].position.y;
-        theFile >> pVertices[index].position.z;
-
-        // File has "nx, ny, nz" ("Normals")
-//        float discard = 0.0f;
- ///       theFile >> discard >> discard >> discard;
-
-        pVertices[index].colour.r = 1.0f;
-        pVertices[index].colour.g = 1.0f;
-        pVertices[index].colour.b = 1.0f;
-    }
-
-
-    return;
-}
+//void LoadAModelFromFile(std::string fileName)
+//{
+//    std::ifstream theFile( fileName.c_str() );
+//    if ( ! theFile.is_open() )
+//    {
+//        return;
+//    }
+//    // File is open
+//
+//    // Read until we hit "vertex"
+//    std::string token;
+//    while (theFile >> token)
+//    {
+//        if (token == "vertex")
+//        {
+//            break;
+//        }
+//    }
+//    // Next thing is number of vertices in file
+//    theFile >> numberOfVertices;
+//
+//    // Read until we hit "face"
+//    while (theFile >> token)
+//    {
+//        if (token == "face")
+//        {
+//            break;
+//        }
+//    }
+//    unsigned long numberOfFaces = 0;
+//    theFile >> numberOfFaces;
+//
+//    // Read until we hit "end_header"
+//    while (theFile >> token)
+//    {
+//        if (token == "end_header")
+//        {
+//            break;
+//        }
+//    }
+//
+//    // Allocate an array big enough to fit the vertices
+//    // Vertex* pVertices = NULL;
+//    pVertices = new Vertex[numberOfVertices];
+//
+//    // The next numberOfvertices rows are the vertices
+//    for (unsigned int index = 0; index != numberOfVertices; index++)
+//    {
+//        theFile >> pVertices[index].position.x;
+//        theFile >> pVertices[index].position.y;
+//        theFile >> pVertices[index].position.z;
+//
+//        // File has "nx, ny, nz" ("Normals")
+////        float discard = 0.0f;
+// ///       theFile >> discard >> discard >> discard;
+//
+//        pVertices[index].colour.r = 1.0f;
+//        pVertices[index].colour.g = 1.0f;
+//        pVertices[index].colour.b = 1.0f;
+//    }
+//
+//
+//    return;
+//}
 
 //void LoadAModelFromFile(std::string fileName,
 //    bool hasNormals,
@@ -361,7 +396,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
-    const float CAMERA_MOVE_SPEED = 0.01f;
+    const float CAMERA_MOVE_SPEED = 0.1f;
 
     // WASD+QE
     // Left and Right 

@@ -11,10 +11,13 @@
 // This is also called the 'vertex layout'. 
 // This means that if the shader vertex layout changed, this
 //  vertex structure will also need to change (usually). 
+//
+// in vec3 vCol;
+// in vec3 vPos;
 struct sVert
 {
-	float x, y, z;		
-	float r, g, b;
+	float x, y, z;		// vPos
+	float r, g, b;		// vCol
 };
 
 
@@ -41,6 +44,7 @@ struct sModelDrawInfo
 	unsigned int numberOfTriangles;
 
 	// The "local" (i.e. "CPU side" temporary array)
+	// THE ONE THAT's IN THE FORMAT THE ++SHADER++ wants
 	sVert* pVertices;	//  = 0;
 	// The index buffer (CPU side)
 	unsigned int* pIndices;
@@ -54,6 +58,15 @@ public:
 	bool LoadModelIntoVAO(std::string fileName, 
 						  sModelDrawInfo &drawInfo, 
 						  unsigned int shaderProgramID);
+
+	//bool LoadModelIntoVAO_XYZ_Normals(std::string fileName, 
+	//					  sModelDrawInfo &drawInfo, 
+	//					  unsigned int shaderProgramID);
+
+	//bool LoadModelIntoVAO_XYZ_Normals_Colours(std::string fileName, 
+	//					  sModelDrawInfo &drawInfo, 
+	//					  unsigned int shaderProgramID);
+
 
 	// We don't want to return an int, likely
 	bool FindDrawInfoByModelName(std::string filename,

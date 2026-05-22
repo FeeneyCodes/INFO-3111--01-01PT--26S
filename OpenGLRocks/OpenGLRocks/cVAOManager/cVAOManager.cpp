@@ -117,16 +117,18 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	// Set the vertex attributes for this shader
 	glEnableVertexAttribArray(vpos_location);	// vPos
-	glVertexAttribPointer( vpos_location, 3,		// vPos
+	glVertexAttribPointer( vpos_location, 
+		                   3,	// vPos
 						   GL_FLOAT, GL_FALSE,
-						   sizeof(float) * 6, 
-						   ( void* )0);
+						   sizeof(sVert),				// Stride
+						   ( void* )offsetof(sVert, x));
 
 	glEnableVertexAttribArray(vcol_location);	// vCol
-	glVertexAttribPointer( vcol_location, 3,		// vCol
+	glVertexAttribPointer( vcol_location, 
+		                   3,		// vCol
 						   GL_FLOAT, GL_FALSE,
-						   sizeof(float) * 6, 
-						   ( void* )( sizeof(float) * 3 ));
+						   sizeof(sVert), 
+						   ( void* )offsetof(sVert,r));
 
 	// Now that all the parts are set up, set the VAO to zero
 	glBindVertexArray(0);
@@ -220,10 +222,10 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	
 	// This is set up to match the ply (3d model) file. 
 	// NOT the shader. 
+	// This should match whatever the PLY file has
 	struct sVertPly
 	{
-		glm::vec3 pos;
-		glm::vec4 colour;
+		glm::vec3 positions;
 	};
 
 	std::vector<sVertPly> vecTempPlyVerts;
@@ -233,23 +235,10 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; // ::g_NumberOfVertices; 
 		  index++ )
 	{
-		thePlyFile >> tempVert.pos.x >> tempVert.pos.y >> tempVert.pos.z;
-		
+		thePlyFile >> tempVert.positions.x;
+		thePlyFile >> tempVert.positions.y; 
+		thePlyFile >> tempVert.positions.z;
 
-//		tempVert.pos.x *= 10.0f;
-//		tempVert.pos.y *= 10.0f;
-//		tempVert.pos.z *= 10.0f;
-
-
-		thePlyFile >> tempVert.colour.x >> tempVert.colour.y
-			       >> tempVert.colour.z >> tempVert.colour.w; 
-
-		// Scale the colour from 0 to 1, instead of 0 to 255
-		tempVert.colour.x /= 255.0f;
-		tempVert.colour.y /= 255.0f;
-		tempVert.colour.z /= 255.0f;
-
-		// Add too... what? 
 		vecTempPlyVerts.push_back(tempVert);
 	}
 
@@ -265,13 +254,13 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 
 	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; index++ )
 	{
-		drawInfo.pVertices[index].x = vecTempPlyVerts[index].pos.x;
-		drawInfo.pVertices[index].y = vecTempPlyVerts[index].pos.y;
-		drawInfo.pVertices[index].z = vecTempPlyVerts[index].pos.z;
+		drawInfo.pVertices[index].x = vecTempPlyVerts[index].positions.x;
+		drawInfo.pVertices[index].y = vecTempPlyVerts[index].positions.y;
+		drawInfo.pVertices[index].z = vecTempPlyVerts[index].positions.z;
 
-		drawInfo.pVertices[index].r = vecTempPlyVerts[index].colour.r;
-		drawInfo.pVertices[index].g = vecTempPlyVerts[index].colour.g;
-		drawInfo.pVertices[index].b = vecTempPlyVerts[index].colour.b;
+		drawInfo.pVertices[index].r = 1.0f;			 //vecTempPlyVerts[index].colour.r;
+		drawInfo.pVertices[index].g = 1.0f;			//vecTempPlyVerts[index].colour.g;
+		drawInfo.pVertices[index].b = 1.0f;			//vecTempPlyVerts[index].colour.b;
 	}// for ( unsigned int index...
 
 
