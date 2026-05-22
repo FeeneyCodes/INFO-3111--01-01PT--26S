@@ -47,5 +47,8 @@
     <ClInclude Include="cVAOManager\cVAOManager.h">
       <Filter>VAOManager</Filter>
     </ClInclude>
+    <ClInclude Include="cMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

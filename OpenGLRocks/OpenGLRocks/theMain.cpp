@@ -21,13 +21,12 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-// String stream
-#include <sstream> 
-#include <iostream>     // cout
-#include <fstream>      // File IO
+#include <vector>
 
 #include "cShaderManager/cShaderManager.h"
 #include "cVAOManager/cVAOManager.h"
+
+#include "cMesh.h"
 
 struct Vertex
 {
@@ -57,6 +56,9 @@ glm::vec3 g_upAxis = glm::vec3(0.0f, +1.0f, 0.0f);// What's up
 
 //
 cVAOManager* g_pVAOManager = NULL;
+
+// note these are pointers
+std::vector< cMesh* > g_vec_pMeshes;
 
 
 void error_callback(int error, const char* description);
@@ -158,6 +160,30 @@ int main(void)
         std::cout << "ERROR: Didn't load " << carModel.meshName << std::endl;
     }
 
+    sModelDrawInfo cowModel;
+    ::g_pVAOManager->LoadModelIntoVAO("cow.ply", cowModel, program);
+
+    sModelDrawInfo mig29Model;
+    ::g_pVAOManager->LoadModelIntoVAO("mig29_xyz_only.ply", mig29Model, program);
+
+
+    // Add the models we want to draw
+    cMesh* pCow = new cMesh();
+    pCow->meshName = "cow.ply";
+    pCow->position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    cMesh* pPlane = new cMesh();
+    pPlane->meshName = "mig29_xyz_only.ply";
+    pPlane->position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    //cMesh* pCar = new cMesh();
+    //pCar->meshName = "de--lorean.ply";
+    //pCar->position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    ::g_vec_pMeshes.push_back(pCow);
+    ::g_vec_pMeshes.push_back(pPlane);
+ //   ::g_vec_pMeshes.push_back(pCar);
+
 
     //const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     //glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
@@ -219,69 +245,88 @@ int main(void)
         glm::mat4 p;
         glm::mat4 mvp;
         //mat4x4_identity(m);
+
+
+        for (std::vector<cMesh*>::iterator it_pMesh = ::g_vec_pMeshes.begin();
+             it_pMesh != ::g_vec_pMeshes.end(); 
+             it_pMesh++)
+        {
+
         
- //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-        glm::mat4 rotateZ = glm::rotate( glm::mat4(1.0f), 
-                                         0.0f, //(float)glfwGetTime(),         // Angle
-                                         glm::vec3(0.0f, 0.0f, 1.0f));
+     //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
+            glm::mat4 rotateZ = glm::rotate( glm::mat4(1.0f), 
+                                             0.0f, //(float)glfwGetTime(),         // Angle
+                                             glm::vec3(0.0f, 0.0f, 1.0f));
             
- //       mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+     //       mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
  
-        //// Camera location or position
-        //glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, -1.0f);
-        //// Looking "at" 
-        //glm::vec3 atPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
-        //// What's up
-        //glm::vec3 upAxis = glm::vec3( 0.0f, +1.0f, 0.0f );
+            //// Camera location or position
+            //glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, -1.0f);
+            //// Looking "at" 
+            //glm::vec3 atPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
+            //// What's up
+            //glm::vec3 upAxis = glm::vec3( 0.0f, +1.0f, 0.0f );
 
- //       eyeZValue += 0.005f;
+     //       eyeZValue += 0.005f;
 
-        // the "camera"
-        glm::mat4 matView = glm::lookAt(::g_eyePosition, 
-                                        ::g_atPosition, 
-                                        ::g_upAxis);
+            // the "camera"
+            glm::mat4 matView = glm::lookAt(::g_eyePosition, 
+                                            ::g_atPosition, 
+                                            ::g_upAxis);
 
-        // projection matrix
-        p = glm::perspective( glm::radians(60.0f),        // FOV 
-                              (float)width / (float)height, // Aspect ratio
-                              0.1f,            // Near plane
-                              1000.0f);         // Far plane
+            // projection matrix
+            p = glm::perspective( glm::radians(60.0f),        // FOV 
+                                  (float)width / (float)height, // Aspect ratio
+                                  0.1f,            // Near plane
+                                  1000.0f);         // Far plane
                               
 
- //       mat4x4_mul(mvp, p, m);
-        m = glm::mat4(1.0f);        // Identity matrix
-        // combine the rotation
-        m = rotateZ * m;
+     //       mat4x4_mul(mvp, p, m);
+            m = glm::mat4(1.0f);        // Identity matrix
+            // combine the rotation
+            m = rotateZ * m;
         
-        //mvp  -- pvm
-        mvp = p * matView * m;
+            //mvp  -- pvm
+            mvp = p * matView * m;
 
-        glUseProgram(program);
+            glUseProgram(program);
 
-        glUniformMatrix4fv( mvp_location, 
-                            1, 
-                            GL_FALSE, 
-                            (const GLfloat*)&mvp);
+            glUniformMatrix4fv( mvp_location, 
+                                1, 
+                                GL_FALSE, 
+                                (const GLfloat*)&mvp);
 
-//        glBindVertexArray(vertex_array);
+    //        glBindVertexArray(vertex_array);
 
-//        glPointSize(10.0f);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//        glDrawArrays(GL_TRIANGLES, 0, 6);
-//        glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
+    //        glPointSize(10.0f);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //        glDrawArrays(GL_TRIANGLES, 0, 6);
+    //        glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
 
-        sModelDrawInfo modelToDraw;
-        if ( g_pVAOManager->FindDrawInfoByModelName("de--lorean.ply", modelToDraw) )
-        {
-            glBindVertexArray(modelToDraw.VAO_ID);
 
-            glDrawElements(GL_TRIANGLES, 
-                           modelToDraw.numberOfIndices, 
-                           GL_UNSIGNED_INT, 
-                           (void*)0);              // Starting index
+            cMesh* pTheMesh = *it_pMesh;            // Gives us pointer to mesh
 
-            glBindVertexArray(0);
-        }//if ( g_pVAOManager
+            std::string meshNameToDraw = pTheMesh->meshName;
+
+            sModelDrawInfo modelToDraw;
+            if ( g_pVAOManager->FindDrawInfoByModelName(meshNameToDraw, modelToDraw) )
+            {
+                glBindVertexArray(modelToDraw.VAO_ID);
+
+                glDrawElements(GL_TRIANGLES, 
+                               modelToDraw.numberOfIndices, 
+                               GL_UNSIGNED_INT, 
+                               (void*)0);              // Starting index
+
+                glBindVertexArray(0);
+            }//if ( g_pVAOManager
+
+
+
+        }//for (std::vector<cMesh*>
+
+
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

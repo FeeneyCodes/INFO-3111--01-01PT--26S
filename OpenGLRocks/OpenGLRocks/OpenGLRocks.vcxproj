@@ -148,6 +148,7 @@
     <ClCompile Include="theMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cMesh.h" />
     <ClInclude Include="cShaderManager\cShaderManager.h" />
     <ClInclude Include="cVAOManager\cVAOManager.h" />
     <ClInclude Include="globalStuff.h" />
