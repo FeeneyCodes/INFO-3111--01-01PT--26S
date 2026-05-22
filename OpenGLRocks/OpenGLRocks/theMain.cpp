@@ -32,95 +32,42 @@ struct Vertex
     glm::vec3 colour;        // vec3 col;    colour
 };
 
-static const Vertex vertices[6] =
-{   //     X     Y       Z    R      G     B  
-    //   float   float         float 
-    { { -0.6f, -0.4f, 0.0f }, { 1.0f, 0.0f, 1.0f } },
-    { {  0.6f, -0.4f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-    { {  0.0f,  0.6f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
-    { { -0.6f + 2.0f, -0.4f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-    { {  0.6f + 2.0f, -0.4f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-    { {  0.0f + 2.0f,  0.6f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
-};
+//Vertex vertices[6] =
+//{   //     X     Y       Z    R      G     B  
+//    //   float   float         float 
+//    { { -0.6f, -0.4f, 0.0f }, { 1.0f, 0.0f, 1.0f } },
+//    { {  0.6f, -0.4f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+//    { {  0.0f,  0.6f, 0.0f }, { 0.0f, 0.0f, 1.0f } },
+//    { { -0.6f + 2.0f, -0.4f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+//    { {  0.6f + 2.0f, -0.4f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+//    { {  0.0f + 2.0f,  0.6f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+//};
 
-//static const char* vertex_shader_text = 
-//"#version 330\n"
-//"uniform mat4 MVP;\n"
-//"in vec3 vCol;\n"
-//"in vec3 vPos;\n"
-//"out vec3 color;\n"
-//"void main()\n"
-//"{\n"
-//"    gl_Position = MVP * vec4(vPos, 1.0);\n"
-//"    color = vCol;\n"
-//"}\n";
-//
-//static const char* fragment_shader_text =
-//"#version 330\n"
-//"in vec3 color;\n"
-//"out vec4 fragment;\n"
-//"void main()\n"
-//"{\n"
-//"    fragment = vec4(color, 1.0);\n"
-//"}\n";
+// Where our vertices are
+Vertex* pVertices = NULL;   // = new [numberpfVertices]
+unsigned long numberOfVertices = 0;
+
 
 glm::vec3 g_eyePosition = glm::vec3(0.0f, 0.0f, -1.0f);   // Camera location or position
 glm::vec3 g_atPosition = glm::vec3(0.0f, 0.0f, 0.0f);// Looking "at" 
 glm::vec3 g_upAxis = glm::vec3(0.0f, +1.0f, 0.0f);// What's up
 
 
+void error_callback(int error, const char* description);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 
-static void error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-
-    const float CAMERA_MOVE_SPEED = 0.01f;
-
-    // WASD+QE
-    // Left and Right 
-    if (key == GLFW_KEY_A)    // Left (-ve on X)
-    {
-        ::g_eyePosition.x -= CAMERA_MOVE_SPEED;
-    }
-    if (key == GLFW_KEY_D)     // Right (+ve on X)
-    {
-        ::g_eyePosition.x += CAMERA_MOVE_SPEED;
-    }
-
-    if (key == GLFW_KEY_W)      // Forward  (+ve on Z axis)
-    {
-        ::g_eyePosition.z += CAMERA_MOVE_SPEED;
-    }
-    if (key == GLFW_KEY_S)      // Backwards  (-ve on Z axis)
-    {
-        ::g_eyePosition.z -= CAMERA_MOVE_SPEED;
-    }
-
-    if (key == GLFW_KEY_Q)      // Up   (+ve on Y axis)
-    {
-        ::g_eyePosition.y += CAMERA_MOVE_SPEED;
-    }
-    if (key == GLFW_KEY_E)      // Down (-ve on Y axis)
-    {
-        ::g_eyePosition.y -= CAMERA_MOVE_SPEED;
-    }
-
-
-
-    return;
-}
 
 int main(void)
 {
+    // Compile time "c style" array 
+//    Vertex vertices2[1000];       // STACK   28000
+    // Dynamic array in C++
+//    Vertex* pVertices = new Vertex[10000000];   // HEAP
+    //int x = 0;
+    //int* pX = new int();
+    //int* pY = new int[1000];
+
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
@@ -149,9 +96,14 @@ int main(void)
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+
+    unsigned long numberOfBytesInArray
+                = sizeof(Vertex) * numberOfVertices;
+
+    // Copy the array to the GPUs RAM
     glBufferData( GL_ARRAY_BUFFER, 
-                  sizeof(vertices), 
-                  vertices, 
+                  numberOfBytesInArray,     // sizeof(vertices),
+                  pVertices,                // vertices,
                   GL_STATIC_DRAW);
 
 
@@ -198,6 +150,7 @@ int main(void)
 
     GLuint vertex_array;
     glGenVertexArrays(1, &vertex_array);
+
     glBindVertexArray(vertex_array);
     //struct Vertex
     //{
@@ -205,6 +158,7 @@ int main(void)
     //    glm::vec3 colour;      // vec3 col;    colour
     //};
     const GLint vpos_location = glGetAttribLocation(program, "vPos");
+
     glEnableVertexAttribArray(vpos_location);
     glVertexAttribPointer( vpos_location, 
                            3, 
@@ -212,7 +166,6 @@ int main(void)
                            GL_FALSE,
                            sizeof(Vertex),      // 20
                            (void*)offsetof(Vertex, position));
-
     const GLint vcol_location = glGetAttribLocation(program, "vCol");
     glEnableVertexAttribArray(vcol_location);
     glVertexAttribPointer( vcol_location, 
@@ -279,10 +232,12 @@ int main(void)
                             GL_FALSE, 
                             (const GLfloat*)&mvp);
 
-        glBindVertexArray(vertex_array);
+//        glBindVertexArray(vertex_array);
+
 //        glPointSize(10.0f);
 //        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+//        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -307,3 +262,54 @@ int main(void)
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
+
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+
+    const float CAMERA_MOVE_SPEED = 0.01f;
+
+    // WASD+QE
+    // Left and Right 
+    if (key == GLFW_KEY_A)    // Left (-ve on X)
+    {
+        ::g_eyePosition.x -= CAMERA_MOVE_SPEED;
+    }
+    if (key == GLFW_KEY_D)     // Right (+ve on X)
+    {
+        ::g_eyePosition.x += CAMERA_MOVE_SPEED;
+    }
+
+    if (key == GLFW_KEY_W)      // Forward  (+ve on Z axis)
+    {
+        ::g_eyePosition.z += CAMERA_MOVE_SPEED;
+    }
+    if (key == GLFW_KEY_S)      // Backwards  (-ve on Z axis)
+    {
+        ::g_eyePosition.z -= CAMERA_MOVE_SPEED;
+    }
+
+    if (key == GLFW_KEY_Q)      // Up   (+ve on Y axis)
+    {
+        ::g_eyePosition.y += CAMERA_MOVE_SPEED;
+    }
+    if (key == GLFW_KEY_E)      // Down (-ve on Y axis)
+    {
+        ::g_eyePosition.y -= CAMERA_MOVE_SPEED;
+    }
+
+
+
+    return;
+}
+
+
+static void error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Error: %s\n", description);
+}
+
