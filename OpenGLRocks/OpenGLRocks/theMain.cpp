@@ -6,6 +6,8 @@
 #include "globalStuff.h"
 
 #include <iostream>
+#include <fstream>      // File
+#include <sstream>      // String stream
 
 //#include "linmath.h"      // Another math library we aren't using
 #include <glm/glm.hpp>
@@ -56,7 +58,8 @@ glm::vec3 g_upAxis = glm::vec3(0.0f, +1.0f, 0.0f);// What's up
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-
+// Load a ply file and put it into the pVertice array
+void LoadAModelFromFile(std::string fileName);
 
 int main(void)
 {
@@ -92,6 +95,12 @@ int main(void)
     glfwSwapInterval(1);
 
     // NOTE: OpenGL error checks have been omitted for brevity
+
+    // Load the model
+//    LoadAModelFromFile("assets/models/mig29.ply");
+    LoadAModelFromFile("assets/models/de--lorean.ply");
+
+
 
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
@@ -235,7 +244,7 @@ int main(void)
 //        glBindVertexArray(vertex_array);
 
 //        glPointSize(10.0f);
-//        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 //        glDrawArrays(GL_TRIANGLES, 0, 6);
         glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
 
@@ -262,6 +271,87 @@ int main(void)
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
+
+
+// Load a ply file and put it into the pVertice array
+//  Vertex* pVertices = NULL;   // = new [numberpfVertices]
+//  unsigned long numberOfVertices = 0;
+void LoadAModelFromFile(std::string fileName)
+{
+    std::ifstream theFile( fileName.c_str() );
+    if ( ! theFile.is_open() )
+    {
+        return;
+    }
+    // File is open
+
+    // Read until we hit "vertex"
+    std::string token;
+    while (theFile >> token)
+    {
+        if (token == "vertex")
+        {
+            break;
+        }
+    }
+    // Next thing is number of vertices in file
+    theFile >> numberOfVertices;
+
+    // Read until we hit "face"
+    while (theFile >> token)
+    {
+        if (token == "face")
+        {
+            break;
+        }
+    }
+    unsigned long numberOfFaces = 0;
+    theFile >> numberOfFaces;
+
+    // Read until we hit "end_header"
+    while (theFile >> token)
+    {
+        if (token == "end_header")
+        {
+            break;
+        }
+    }
+
+    // Allocate an array big enough to fit the vertices
+    // Vertex* pVertices = NULL;
+    pVertices = new Vertex[numberOfVertices];
+
+    // The next numberOfvertices rows are the vertices
+    for (unsigned int index = 0; index != numberOfVertices; index++)
+    {
+        theFile >> pVertices[index].position.x;
+        theFile >> pVertices[index].position.y;
+        theFile >> pVertices[index].position.z;
+
+        // File has "nx, ny, nz" ("Normals")
+//        float discard = 0.0f;
+ ///       theFile >> discard >> discard >> discard;
+
+        pVertices[index].colour.r = 1.0f;
+        pVertices[index].colour.g = 1.0f;
+        pVertices[index].colour.b = 1.0f;
+    }
+
+
+    return;
+}
+
+//void LoadAModelFromFile(std::string fileName,
+//    bool hasNormals,
+//    bool hasColours,
+//    bool hasTexutre)
+//{
+//
+//    return;
+//}
+
+
+
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

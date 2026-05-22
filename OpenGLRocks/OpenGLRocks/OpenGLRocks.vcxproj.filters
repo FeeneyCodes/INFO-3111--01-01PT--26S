@@ -16,6 +16,9 @@
     <Filter Include="cShaderManager">
       <UniqueIdentifier>{30385cca-9994-46ab-a51d-05de9e0a2187}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VAOManager">
+      <UniqueIdentifier>{222e3e7c-fafb-4545-9e7a-d45a75934af7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="theMain.cpp">
@@ -30,6 +33,9 @@
     <ClCompile Include="cShaderManager\cShaderManager.cpp">
       <Filter>cShaderManager</Filter>
     </ClCompile>
+    <ClCompile Include="cVAOManager\cVAOManager.cpp">
+      <Filter>VAOManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">
@@ -37,6 +43,9 @@
     </ClInclude>
     <ClInclude Include="globalStuff.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cVAOManager\cVAOManager.h">
+      <Filter>VAOManager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
