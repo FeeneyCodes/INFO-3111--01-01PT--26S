@@ -171,19 +171,24 @@ int main(void)
     // Add the models we want to draw
     cMesh* pCow = new cMesh();
     pCow->meshName = "cow.ply";
-    pCow->position = glm::vec3(0.0f, 0.0f, 0.0f);
+    pCow->position = glm::vec3(0.0f, 0.0f, -2.0f);
+    pCow->scale = 1.0f / 10.0f;
 
     cMesh* pPlane = new cMesh();
     pPlane->meshName = "mig29_xyz_only.ply";
-    pPlane->position = glm::vec3(0.0f, 0.0f, 0.0f);
+    pPlane->position = glm::vec3(0.0f, 2.0f, 0.0f);
+    pPlane->rotation.x = 45.0f;
+    pPlane->rotation.y = 15.0f;
+    pPlane->scale = 2.0f;
 
     cMesh* pBunny1 = new cMesh();
     pBunny1->meshName = "bun_zipper_xyz.ply";
-    pBunny1->position.x = 5.0f;
+    pBunny1->position.x = 2.0f;
 
     cMesh* pBunny2 = new cMesh();
     pBunny2->meshName = "bun_zipper_xyz.ply";
-    pBunny2->position.x = -5.0f;
+    pBunny2->position.x = 3.0f;
+    pBunny2->scale = 1.5f;
 
     //cMesh* pCar = new cMesh();
     //pCar->meshName = "de--lorean.ply";
@@ -250,12 +255,24 @@ int main(void)
         const float ratio = width / (float)height;
 
         glViewport(0, 0, width, height);
+
+        // Clears the screen
+        //glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glm::mat4 m;             //mat4x4 m, p, mvp;
-        glm::mat4 p;
-        glm::mat4 mvp;
-        //mat4x4_identity(m);
+        // "p" for "projection"
+        glm::mat4 matProj 
+            = glm::perspective( glm::radians(60.0f),        // FOV 
+                                (float)width / (float)height, // Aspect ratio
+                                0.1f,            // Near plane
+                                1000.0f);         // Far plane
+
+        // the "camera"
+        glm::mat4 matView 
+            = glm::lookAt( ::g_eyePosition,
+                           ::g_atPosition,
+                           ::g_upAxis);
+
 
 
         for (std::vector<cMesh*>::iterator it_pMesh = ::g_vec_pMeshes.begin();
@@ -263,42 +280,55 @@ int main(void)
              it_pMesh++)
         {
 
-        
-     //       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-            glm::mat4 rotateZ = glm::rotate( glm::mat4(1.0f), 
-                                             0.0f, //(float)glfwGetTime(),         // Angle
-                                             glm::vec3(0.0f, 0.0f, 1.0f));
-            
-     //       mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
- 
-            //// Camera location or position
-            //glm::vec3 eyePosition = glm::vec3( 0.0f, 0.0f, -1.0f);
-            //// Looking "at" 
-            //glm::vec3 atPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
-            //// What's up
-            //glm::vec3 upAxis = glm::vec3( 0.0f, +1.0f, 0.0f );
+            cMesh* pTheMesh = *it_pMesh;            // Gives us pointer to mesh
 
-     //       eyeZValue += 0.005f;
 
-            // the "camera"
-            glm::mat4 matView = glm::lookAt(::g_eyePosition, 
-                                            ::g_atPosition, 
-                                            ::g_upAxis);
+            // Set to the "identity matrix"
+            glm::mat4 matModel = glm::mat4(1.0f);         // "m"    //mat4x4 m, p, mvp;
+       
 
-            // projection matrix
-            p = glm::perspective( glm::radians(60.0f),        // FOV 
-                                  (float)width / (float)height, // Aspect ratio
-                                  0.1f,            // Near plane
-                                  1000.0f);         // Far plane
-                              
+            // Transformations 
+            glm::mat4 matTranslate
+                = glm::translate(glm::mat4(1.0f),
+                    glm::vec3( pTheMesh->position.x,
+                               pTheMesh->position.y,
+                               pTheMesh->position.z) );
 
-     //       mat4x4_mul(mvp, p, m);
-            m = glm::mat4(1.0f);        // Identity matrix
+            glm::mat4 matRotateX
+                = glm::rotate( glm::mat4(1.0f),
+                               glm::radians<float>(pTheMesh->rotation.x),
+                               glm::vec3(1.0f, 0.0f, 0.0f));
+
+            glm::mat4 matRotateY  
+                = glm::rotate( glm::mat4(1.0f),
+                               glm::radians<float>(pTheMesh->rotation.y),
+                               glm::vec3(0.0f, 1.0f, 0.0f));
+
+            glm::mat4 matRotateZ 
+                = glm::rotate( glm::mat4(1.0f),
+                               glm::radians<float>(pTheMesh->rotation.z),
+                               glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+            glm::mat4 matScale
+                = glm::scale(glm::mat4(1.0f),
+                    glm::vec3( pTheMesh->scale,
+                               pTheMesh->scale,
+                               pTheMesh->scale) );
+
+      
             // combine the rotation
-            m = rotateZ * m;
+            matModel = matScale * matModel;         // last to be applied
         
+            matModel = matRotateX * matModel;
+            matModel = matRotateY * matModel;
+            matModel = matRotateZ * matModel;
+
+            matModel = matTranslate * matModel;     // 1st to be applied
+
+
             //mvp  -- pvm
-            mvp = p * matView * m;
+            glm::mat4x4 mvp = matProj * matView * matModel;
 
             glUseProgram(program);
 
@@ -315,7 +345,6 @@ int main(void)
     //        glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
 
 
-            cMesh* pTheMesh = *it_pMesh;            // Gives us pointer to mesh
 
             std::string meshNameToDraw = pTheMesh->meshName;
 
