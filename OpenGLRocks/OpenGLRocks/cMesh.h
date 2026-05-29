@@ -5,6 +5,7 @@
 #include <glm/vec3.hpp>
 #include <string>
 
+// GameObject
 class cMesh
 {
 public:

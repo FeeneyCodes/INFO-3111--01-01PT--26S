@@ -61,6 +61,8 @@ bool cVAOManager::LoadModelIntoVAO(
 	
 	std::string fullFileNameWithPath = this->m_FileBasePath + '/' + fileName;
 
+	// Make sure that the LoadTheModel is loading the specific format 
+	//	for *that* file. xyz, xyz+n, xyz+colour, xyz+colour+normal
 	if ( ! this->m_LoadTheModel( fullFileNameWithPath, drawInfo ) )
 	{
 		this->m_AppendTextToLastError( "Didn't load model", true );
@@ -226,6 +228,7 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	struct sVertPly
 	{
 		glm::vec3 positions;
+//		glm::vec3 normals;		// The mig file has this
 	};
 
 	std::vector<sVertPly> vecTempPlyVerts;
@@ -239,6 +242,38 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 		thePlyFile >> tempVert.positions.y; 
 		thePlyFile >> tempVert.positions.z;
 
+		//// HACK:
+		//if (fileName == "assets/models/cow.ply")
+		//{
+		//	tempVert.positions.x /= 10.0f;
+		//	tempVert.positions.y /= 10.0f;
+		//	tempVert.positions.z /= 10.0f;
+		//	// Skootch it 
+		//	tempVert.positions.x -= 2.0f;
+
+
+		//}
+		//if (fileName == "assets/models/mig29_xyz_only.ply")
+		//{
+		//	tempVert.positions.x *= 2.0f;
+		//	tempVert.positions.y *= 2.0f;
+		//	tempVert.positions.z *= 2.0f;
+		//	// Skootch it 
+		//	tempVert.positions.x += 5.0f;
+		//	tempVert.positions.y += 3.0f;
+		//}
+
+
+
+		//float garbageNumber;
+		//thePlyFile >> garbageNumber;
+		//thePlyFile >> garbageNumber;
+		//thePlyFile >> garbageNumber;
+
+		//thePlyFile >> tempVert.normals.x;
+		//thePlyFile >> tempVert.normals.y;
+		//thePlyFile >> tempVert.normals.z;		
+		
 		vecTempPlyVerts.push_back(tempVert);
 	}
 
@@ -247,11 +282,15 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	// - sVertPly was made to match the file format
 	// - sVert was made to match the shader vertex attrib format
 
+
 	drawInfo.pVertices = new sVert[drawInfo.numberOfVertices];
 
 	// Optional clear array to zero 
 	//memset( drawInfo.pVertices, 0, sizeof(sVert) * drawInfo.numberOfVertices);
 
+
+	// The structure we had to load the PLY file is now converted 
+	//	and copied into a structure that the shader expects...
 	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; index++ )
 	{
 		drawInfo.pVertices[index].x = vecTempPlyVerts[index].positions.x;

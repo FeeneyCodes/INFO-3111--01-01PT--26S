@@ -60,7 +60,6 @@ cVAOManager* g_pVAOManager = NULL;
 // note these are pointers
 std::vector< cMesh* > g_vec_pMeshes;
 
-
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -166,6 +165,8 @@ int main(void)
     sModelDrawInfo mig29Model;
     ::g_pVAOManager->LoadModelIntoVAO("mig29_xyz_only.ply", mig29Model, program);
 
+    sModelDrawInfo bunnyModel;
+    ::g_pVAOManager->LoadModelIntoVAO("bun_zipper_xyz.ply", bunnyModel, program);
 
     // Add the models we want to draw
     cMesh* pCow = new cMesh();
@@ -176,12 +177,22 @@ int main(void)
     pPlane->meshName = "mig29_xyz_only.ply";
     pPlane->position = glm::vec3(0.0f, 0.0f, 0.0f);
 
+    cMesh* pBunny1 = new cMesh();
+    pBunny1->meshName = "bun_zipper_xyz.ply";
+    pBunny1->position.x = 5.0f;
+
+    cMesh* pBunny2 = new cMesh();
+    pBunny2->meshName = "bun_zipper_xyz.ply";
+    pBunny2->position.x = -5.0f;
+
     //cMesh* pCar = new cMesh();
     //pCar->meshName = "de--lorean.ply";
     //pCar->position = glm::vec3(0.0f, 0.0f, 0.0f);
 
     ::g_vec_pMeshes.push_back(pCow);
     ::g_vec_pMeshes.push_back(pPlane);
+    ::g_vec_pMeshes.push_back(pBunny1);
+    ::g_vec_pMeshes.push_back(pBunny2);
  //   ::g_vec_pMeshes.push_back(pCar);
 
 

@@ -153,6 +153,10 @@
     <ClInclude Include="cVAOManager\cVAOManager.h" />
     <ClInclude Include="globalStuff.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\simpleFragment.glsl" />
+    <None Include="assets\shaders\simpleVertex.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
