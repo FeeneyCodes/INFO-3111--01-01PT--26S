@@ -4,16 +4,16 @@ in vec3 color;
 
 out vec4 fragment;	// to the screen
 
+uniform vec3 theColour;
+
 void main()
 {
 	// This is the colour of the pixel
-	vec3 theColour = color;
+	vec3 pixelColour = color;
 	// Trick the compiler
-	theColour *= 0.00001f;	// Effectively gone
+	pixelColour.rgb *= 0.00001f;	// Effectively gone
 	
-	theColour.r += 1.0f;
-	theColour.g += 0.0f;
-	theColour.b += 0.0f;
+	pixelColour.rgb += theColour.rgb;
 	
-    fragment = vec4(theColour, 1.0);
+    fragment = vec4(pixelColour, 1.0);
 }

@@ -143,6 +143,9 @@ int main(void)
     GLuint program = pTheShaderManager->getIDFromFriendlyName("SimpleShader");
 
 
+    glUseProgram(program);
+
+
     // Load the models
     ::g_pVAOManager = new cVAOManager();
 
@@ -174,6 +177,7 @@ int main(void)
     pCow->position = glm::vec3(0.0f, 0.0f, -2.0f);
     pCow->scale = 1.0f / 10.0f;
     pCow->bIsWireFrame = true;
+    pCow->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
 
     cMesh* pPlane = new cMesh();
     pPlane->meshName = "mig29_xyz_only.ply";
@@ -181,15 +185,18 @@ int main(void)
     pPlane->rotation.x = 45.0f;
     pPlane->rotation.y = 15.0f;
     pPlane->scale = 2.0f;
+    pPlane->diffuseRGB = glm::vec3(1.0f, 0.0f, 0.0f);
 
     cMesh* pBunny1 = new cMesh();
     pBunny1->meshName = "bun_zipper_xyz.ply";
     pBunny1->position.x = 2.0f;
+    pBunny1->diffuseRGB = glm::vec3(0.6f, 0.3f, 0.7f);
 
     cMesh* pBunny2 = new cMesh();
     pBunny2->meshName = "bun_zipper_xyz.ply";
     pBunny2->position.x = 3.0f;
     pBunny2->scale = 1.5f;
+    pBunny1->diffuseRGB = glm::vec3(0.3f, 0.7f, 0.6f);
 
     //cMesh* pCar = new cMesh();
     //pCar->meshName = "de--lorean.ply";
@@ -202,52 +209,6 @@ int main(void)
  //   ::g_vec_pMeshes.push_back(pCar);
 
 
-    //const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    //glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
-    //glCompileShader(vertex_shader);
-
-    //const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    //glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
-    //glCompileShader(fragment_shader);
-
-    //const GLuint program = glCreateProgram();
-    //glAttachShader(program, vertex_shader);
-    //glAttachShader(program, fragment_shader);
-    //glLinkProgram(program);
-
-
-
-
-
-    const GLint mvp_location = glGetUniformLocation(program, "MVP");
-
-
-    //GLuint vertex_array;
-    //glGenVertexArrays(1, &vertex_array);
-
-    //glBindVertexArray(vertex_array);
-    ////struct Vertex
-    ////{
-    ////    glm::vec3 position;      // vec2 pos;  position
-    ////    glm::vec3 colour;      // vec3 col;    colour
-    ////};
-    //const GLint vpos_location = glGetAttribLocation(program, "vPos");
-
-    //glEnableVertexAttribArray(vpos_location);
-    //glVertexAttribPointer( vpos_location, 
-    //                       3, 
-    //                       GL_FLOAT, 
-    //                       GL_FALSE,
-    //                       sizeof(Vertex),      // 20
-    //                       (void*)offsetof(Vertex, position));
-    //const GLint vcol_location = glGetAttribLocation(program, "vCol");
-    //glEnableVertexAttribArray(vcol_location);
-    //glVertexAttribPointer( vcol_location, 
-    //                       3, 
-    //                       GL_FLOAT, 
-    //                       GL_FALSE,
-    //                       sizeof(Vertex), 
-    //                       (void*)offsetof(Vertex, colour));
 
     while ( ! glfwWindowShouldClose(window) )
     {
@@ -331,9 +292,9 @@ int main(void)
             //mvp  -- pvm
             glm::mat4x4 mvp = matProj * matView * matModel;
 
-            glUseProgram(program);
 
-            glUniformMatrix4fv( mvp_location, 
+            const GLint mvp_location = glGetUniformLocation(program, "MVP");
+            glUniformMatrix4fv( mvp_location,
                                 1, 
                                 GL_FALSE, 
                                 (const GLfloat*)&mvp);
@@ -349,6 +310,15 @@ int main(void)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
 
+
+            // Get the uniform for the colour
+            // uniform vec3 theColour;
+            GLint theColour_UL = glGetUniformLocation(program, "theColour");
+
+            glUniform3f( theColour_UL,
+                         pTheMesh->diffuseRGB.r,
+                         pTheMesh->diffuseRGB.g,
+                         pTheMesh->diffuseRGB.b);
  
 
             std::string meshNameToDraw = pTheMesh->meshName;
