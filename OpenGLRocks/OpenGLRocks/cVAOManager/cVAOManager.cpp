@@ -297,9 +297,10 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 		drawInfo.pVertices[index].y = vecTempPlyVerts[index].positions.y;
 		drawInfo.pVertices[index].z = vecTempPlyVerts[index].positions.z;
 
-		drawInfo.pVertices[index].r = 1.0f;			 //vecTempPlyVerts[index].colour.r;
-		drawInfo.pVertices[index].g = 1.0f;			//vecTempPlyVerts[index].colour.g;
-		drawInfo.pVertices[index].b = 1.0f;			//vecTempPlyVerts[index].colour.b;
+		// The files doesn't have colours, so we'll set them to white
+		drawInfo.pVertices[index].r = 1.0f;	// getRand();			 //vecTempPlyVerts[index].colour.r;
+		drawInfo.pVertices[index].g = 1.0f;	// getRand();			//vecTempPlyVerts[index].colour.g;
+		drawInfo.pVertices[index].b = 1.0f;	// getRand();			//vecTempPlyVerts[index].colour.b;
 	}// for ( unsigned int index...
 
 

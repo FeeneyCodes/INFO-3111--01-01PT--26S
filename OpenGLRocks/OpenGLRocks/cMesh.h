@@ -14,5 +14,7 @@ public:
 	glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 	float scale = 1.0f; 
 
+	bool bIsWireFrame = false;
+
 	// std::string textures[8];
 };

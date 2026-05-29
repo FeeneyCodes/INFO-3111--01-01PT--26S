@@ -5,7 +5,7 @@ uniform mat4 MVP;
 in vec3 vCol;
 in vec3 vPos;
 
-out vec3 color;
+out vec3 color;		// to the fragment shader
 
 void main()
 {

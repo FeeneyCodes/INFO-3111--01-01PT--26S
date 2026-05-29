@@ -50,7 +50,7 @@ struct Vertex
 //unsigned long numberOfVertices = 0;
 
 
-glm::vec3 g_eyePosition = glm::vec3(0.0f, 0.0f, -1.0f);   // Camera location or position
+glm::vec3 g_eyePosition = glm::vec3(0.0f, 0.0f, -5.0f);   // Camera location or position
 glm::vec3 g_atPosition = glm::vec3(0.0f, 0.0f, 0.0f);// Looking "at" 
 glm::vec3 g_upAxis = glm::vec3(0.0f, +1.0f, 0.0f);// What's up
 
@@ -173,6 +173,7 @@ int main(void)
     pCow->meshName = "cow.ply";
     pCow->position = glm::vec3(0.0f, 0.0f, -2.0f);
     pCow->scale = 1.0f / 10.0f;
+    pCow->bIsWireFrame = true;
 
     cMesh* pPlane = new cMesh();
     pPlane->meshName = "mig29_xyz_only.ply";
@@ -337,14 +338,18 @@ int main(void)
                                 GL_FALSE, 
                                 (const GLfloat*)&mvp);
 
-    //        glBindVertexArray(vertex_array);
 
-    //        glPointSize(10.0f);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //        glDrawArrays(GL_TRIANGLES, 0, 6);
-    //        glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
+            //        glPointSize(10.0f);
+            if (pTheMesh->bIsWireFrame)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
+            else
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
 
-
+ 
 
             std::string meshNameToDraw = pTheMesh->meshName;
 
@@ -393,83 +398,11 @@ int main(void)
 }
 
 
-// Load a ply file and put it into the pVertice array
-//  Vertex* pVertices = NULL;   // = new [numberpfVertices]
-//  unsigned long numberOfVertices = 0;
-//void LoadAModelFromFile(std::string fileName)
-//{
-//    std::ifstream theFile( fileName.c_str() );
-//    if ( ! theFile.is_open() )
-//    {
-//        return;
-//    }
-//    // File is open
-//
-//    // Read until we hit "vertex"
-//    std::string token;
-//    while (theFile >> token)
-//    {
-//        if (token == "vertex")
-//        {
-//            break;
-//        }
-//    }
-//    // Next thing is number of vertices in file
-//    theFile >> numberOfVertices;
-//
-//    // Read until we hit "face"
-//    while (theFile >> token)
-//    {
-//        if (token == "face")
-//        {
-//            break;
-//        }
-//    }
-//    unsigned long numberOfFaces = 0;
-//    theFile >> numberOfFaces;
-//
-//    // Read until we hit "end_header"
-//    while (theFile >> token)
-//    {
-//        if (token == "end_header")
-//        {
-//            break;
-//        }
-//    }
-//
-//    // Allocate an array big enough to fit the vertices
-//    // Vertex* pVertices = NULL;
-//    pVertices = new Vertex[numberOfVertices];
-//
-//    // The next numberOfvertices rows are the vertices
-//    for (unsigned int index = 0; index != numberOfVertices; index++)
-//    {
-//        theFile >> pVertices[index].position.x;
-//        theFile >> pVertices[index].position.y;
-//        theFile >> pVertices[index].position.z;
-//
-//        // File has "nx, ny, nz" ("Normals")
-////        float discard = 0.0f;
-// ///       theFile >> discard >> discard >> discard;
-//
-//        pVertices[index].colour.r = 1.0f;
-//        pVertices[index].colour.g = 1.0f;
-//        pVertices[index].colour.b = 1.0f;
-//    }
-//
-//
-//    return;
-//}
 
-//void LoadAModelFromFile(std::string fileName,
-//    bool hasNormals,
-//    bool hasColours,
-//    bool hasTexutre)
-//{
-//
-//    return;
-//}
-
+float getRand(void)
+{
+    return ((float)rand()) / RAND_MAX;
+}
 
 
 
