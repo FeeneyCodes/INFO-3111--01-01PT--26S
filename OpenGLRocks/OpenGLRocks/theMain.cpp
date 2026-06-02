@@ -83,7 +83,11 @@ int main(void)
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // Core sometimes doesn't work on some cards (gives black screen)
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
+
 
     GLFWwindow* window = glfwCreateWindow(1024, 768, "I love OpenGL", NULL, NULL);
     if (!window)
@@ -100,6 +104,12 @@ int main(void)
     glfwSwapInterval(1);
 
     // NOTE: OpenGL error checks have been omitted for brevity
+
+    std::cout << glfwGetVersionString() << std::endl;
+    GLint GLMajor, GLMinor;
+    glGetIntegerv(GL_MAJOR_VERSION, &GLMajor);
+    glGetIntegerv(GL_MINOR_VERSION, &GLMinor);
+    std::cout << "OpenGL Version " << GLMajor << "." << GLMinor << std::endl;
 
     // Load the model
 //    LoadAModelFromFile("assets/models/mig29.ply");
