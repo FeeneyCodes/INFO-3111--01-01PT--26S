@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 #include <string>
+#include <vector>
 
 // GameObject
 class cMesh
@@ -21,4 +22,5 @@ public:
 	glm::vec3 specularRGB_P;	
 
 	// std::string textures[8];
+	//std::vector< cMesh* > m_vec_pChildMeshes;
 };

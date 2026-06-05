@@ -8,6 +8,10 @@
 
 #include <stdlib.h>
 
+#include "cBasicFlyCamera/cBasicFlyCamera.h"
+
+extern cBasicFlyCamera* g_pFlyCamera;
+
 // Only function signatures
 float getRand(void);
 

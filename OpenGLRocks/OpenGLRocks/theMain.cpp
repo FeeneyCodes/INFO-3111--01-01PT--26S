@@ -50,18 +50,41 @@ struct Vertex
 //unsigned long numberOfVertices = 0;
 
 
-glm::vec3 g_eyePosition = glm::vec3(0.0f, 0.0f, -5.0f);   // Camera location or position
-glm::vec3 g_atPosition = glm::vec3(0.0f, 0.0f, 0.0f);// Looking "at" 
+//glm::vec3 g_eyePosition = glm::vec3(0.0f, 0.0f, -5.0f);   // Camera location or position
+//glm::vec3 g_atPosition = glm::vec3(0.0f, 0.0f, 0.0f);// Looking "at" 
 glm::vec3 g_upAxis = glm::vec3(0.0f, +1.0f, 0.0f);// What's up
 
 //
 cVAOManager* g_pVAOManager = NULL;
+
+cBasicFlyCamera* g_pFlyCamera = NULL;
 
 // note these are pointers
 std::vector< cMesh* > g_vec_pMeshes;
 
 void error_callback(int error, const char* description);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+// Set the callbacks for the mouse
+// https://www.glfw.org/docs/3.3/input_guide.html#input_mouse
+//
+// Set with glfwSetCursorPosCallback(window, cursor_position_callback);
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+//
+// Set with glfwSetCursorEnterCallback(window, cursor_enter_callback);
+void cursor_enter_callback(GLFWwindow* window, int entered);
+//
+// Set with glfwSetMouseButtonCallback(window, mouse_button_callback);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+//
+// Set with glfwSetScrollCallback(window, scroll_callback);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+// These are in mouse_keyboard_async.cpp
+void handleKeyboardAsync(GLFWwindow* window);
+void handleMouseAsync(GLFWwindow* window);
+
+
 
 // Load a ply file and put it into the pVertice array
 //void LoadAModelFromFile(std::string fileName);
@@ -97,6 +120,13 @@ int main(void)
     }
 
     glfwSetKeyCallback(window, key_callback);
+    // And the mouse callbacks
+    glfwSetCursorPosCallback(window, cursor_position_callback);   
+    glfwSetCursorEnterCallback(window, cursor_enter_callback);    
+    glfwSetMouseButtonCallback(window, mouse_button_callback);    
+    glfwSetScrollCallback(window, scroll_callback);
+
+
 
     glfwMakeContextCurrent(window);
     //gladLoadGL(glfwGetProcAddress);
@@ -181,6 +211,17 @@ int main(void)
     sModelDrawInfo bunnyModel;
     ::g_pVAOManager->LoadModelIntoVAO("bun_zipper_xyz.ply", bunnyModel, program);
 
+    sModelDrawInfo terrainModel;
+    ::g_pVAOManager->LoadModelIntoVAO("terrain_xyz.ply", terrainModel, program);
+
+    cMesh* pTerrain = new cMesh();
+    pTerrain->meshName = "terrain_xyz.ply";
+    pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+    pTerrain->bIsWireFrame = true;
+    pTerrain->rotation.x = -90.0f;
+    pTerrain->position.y = -50.0f;
+    ::g_vec_pMeshes.push_back(pTerrain);
+
     // Add the models we want to draw
     cMesh* pCow = new cMesh();
     pCow->meshName = "cow.ply";
@@ -218,10 +259,15 @@ int main(void)
     ::g_vec_pMeshes.push_back(pBunny2);
  //   ::g_vec_pMeshes.push_back(pCar);
 
+    // Create a camera
+    ::g_pFlyCamera = new cBasicFlyCamera();
+    ::g_pFlyCamera->setEyeLocation(0.0f, 0.0f, -5.0f);
+
 
 
     while ( ! glfwWindowShouldClose(window) )
     {
+
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         const float ratio = width / (float)height;
@@ -241,8 +287,8 @@ int main(void)
 
         // the "camera"
         glm::mat4 matView 
-            = glm::lookAt( ::g_eyePosition,
-                           ::g_atPosition,
+            = glm::lookAt( ::g_pFlyCamera->getEyeLocation(),    //  ::g_eyePosition,
+                           ::g_pFlyCamera->getTargetLocation(), // ::g_atPosition,
                            ::g_upAxis);
 
 
@@ -354,15 +400,22 @@ int main(void)
 
 
         glfwSwapBuffers(window);
+        
+        // GLFW checks the mouse and keyboard
         glfwPollEvents();
+        //
+        handleKeyboardAsync(window);
+        handleMouseAsync(window);
 
 
         std::stringstream ssTitle;
 
+        glm::vec3 eyePosition = ::g_pFlyCamera->getEyeLocation();
+
         ssTitle << "Camera (x,y,z): "
-            << ::g_eyePosition.x << ", "
-            << ::g_eyePosition.y << ", "
-            << ::g_eyePosition.z;
+            << eyePosition.x << ", "
+            << eyePosition.y << ", "
+            << eyePosition.z;
 
         // str() makes it a std::string
         // c_str() makes it a char* ("C style string")
@@ -370,6 +423,10 @@ int main(void)
 
 
     }//  while(...)
+
+    delete pTheShaderManager;
+    delete ::g_pVAOManager;
+    delete ::g_pFlyCamera;
 
     glfwDestroyWindow(window);
 
@@ -396,34 +453,34 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
     const float CAMERA_MOVE_SPEED = 0.1f;
 
-    // WASD+QE
-    // Left and Right 
-    if (key == GLFW_KEY_A)    // Left (-ve on X)
-    {
-        ::g_eyePosition.x -= CAMERA_MOVE_SPEED;
-    }
-    if (key == GLFW_KEY_D)     // Right (+ve on X)
-    {
-        ::g_eyePosition.x += CAMERA_MOVE_SPEED;
-    }
-
-    if (key == GLFW_KEY_W)      // Forward  (+ve on Z axis)
-    {
-        ::g_eyePosition.z += CAMERA_MOVE_SPEED;
-    }
-    if (key == GLFW_KEY_S)      // Backwards  (-ve on Z axis)
-    {
-        ::g_eyePosition.z -= CAMERA_MOVE_SPEED;
-    }
-
-    if (key == GLFW_KEY_Q)      // Up   (+ve on Y axis)
-    {
-        ::g_eyePosition.y += CAMERA_MOVE_SPEED;
-    }
-    if (key == GLFW_KEY_E)      // Down (-ve on Y axis)
-    {
-        ::g_eyePosition.y -= CAMERA_MOVE_SPEED;
-    }
+ //   // WASD+QE
+ //   // Left and Right 
+ //   if (key == GLFW_KEY_A)    // Left (-ve on X)
+ //   {
+ //       ::g_eyePosition.x -= CAMERA_MOVE_SPEED;
+ //   }
+ //   if (key == GLFW_KEY_D)     // Right (+ve on X)
+ //   {
+ //       ::g_eyePosition.x += CAMERA_MOVE_SPEED;
+ //   }
+ //
+ //   if (key == GLFW_KEY_W)      // Forward  (+ve on Z axis)
+ //   {
+ //       ::g_eyePosition.z += CAMERA_MOVE_SPEED;
+ //   }
+ //   if (key == GLFW_KEY_S)      // Backwards  (-ve on Z axis)
+ //   {
+ //       ::g_eyePosition.z -= CAMERA_MOVE_SPEED;
+ //   }
+ //
+ //   if (key == GLFW_KEY_Q)      // Up   (+ve on Y axis)
+ //   {
+ //       ::g_eyePosition.y += CAMERA_MOVE_SPEED;
+ //   }
+ //   if (key == GLFW_KEY_E)      // Down (-ve on Y axis)
+ //   {
+ //       ::g_eyePosition.y -= CAMERA_MOVE_SPEED;
+ //   }
 
 
 
