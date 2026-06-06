@@ -114,23 +114,62 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	// Set the vertex attributes.
 
-	GLint vpos_location = glGetAttribLocation(shaderProgramID, "vPos");	// program
-	GLint vcol_location = glGetAttribLocation(shaderProgramID, "vCol");	// program;
 
-	// Set the vertex attributes for this shader
-	glEnableVertexAttribArray(vpos_location);	// vPos
-	glVertexAttribPointer( vpos_location, 
-		                   3,	// vPos
-						   GL_FLOAT, GL_FALSE,
-						   sizeof(sVert),				// Stride
-						   ( void* )offsetof(sVert, x));
+//	GLint vpos_location = glGetAttribLocation(shaderProgramID, "vPos");	// program
+//	GLint vcol_location = glGetAttribLocation(shaderProgramID, "vCol");	// program;
+//
+//	// Set the vertex attributes for this shader
+//	glEnableVertexAttribArray(vpos_location);	// vPos
+//	glVertexAttribPointer( vpos_location, 
+//		                   3,	// vPos
+//						   GL_FLOAT, GL_FALSE,
+//						   sizeof(sVert),				// Stride
+//						   ( void* )offsetof(sVert, x));
+//
+//	glEnableVertexAttribArray(vcol_location);	// vCol
+//	glVertexAttribPointer( vcol_location, 
+//		                   3,		// vCol
+//						   GL_FLOAT, GL_FALSE,
+//						   sizeof(sVert), 
+//						   ( void* )offsetof(sVert,r));
 
-	glEnableVertexAttribArray(vcol_location);	// vCol
-	glVertexAttribPointer( vcol_location, 
-		                   3,		// vCol
+	// New vertex layout that's in the shader
+	//	in vec4 vertexColour;		// RGBA
+	//	in vec4 vertexPosition;		// XYZ (w not used)
+	//	in vec4 vertexNormal;		// XYZ (w not used)
+	//	in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
+
+	GLint vertexColour_location = glGetAttribLocation(shaderProgramID, "vertexColour");
+	glEnableVertexAttribArray(vertexColour_location);	
+	glVertexAttribPointer( vertexColour_location,
+				           4,		// vCol
 						   GL_FLOAT, GL_FALSE,
 						   sizeof(sVert), 
-						   ( void* )offsetof(sVert,r));
+						   ( void* )offsetof(sVert, vertColour.r));
+
+	GLint vertexPosition_location = glGetAttribLocation(shaderProgramID, "vertexPosition");
+	glEnableVertexAttribArray(vertexPosition_location);
+	glVertexAttribPointer(vertexPosition_location,
+	                       4,		// vCol
+	                       GL_FLOAT, GL_FALSE,
+	                       sizeof(sVert),
+	                       (void*)offsetof(sVert, vertPosition.x));
+
+	GLint vertexNormal_location = glGetAttribLocation(shaderProgramID, "vertexNormal");
+	glEnableVertexAttribArray(vertexNormal_location);
+	glVertexAttribPointer( vertexNormal_location,
+	                       4,		// vCol
+	                       GL_FLOAT, GL_FALSE,
+	                       sizeof(sVert),
+	                       (void*)offsetof(sVert, vertNormal.x));
+
+	GLint vertexUVx2_location = glGetAttribLocation(shaderProgramID, "vertexUVx2");
+	glEnableVertexAttribArray(vertexUVx2_location);
+	glVertexAttribPointer( vertexUVx2_location,
+	                       4,		// vCol
+	                       GL_FLOAT, GL_FALSE,
+	                       sizeof(sVert),
+	                       (void*)offsetof(sVert, vertUVx2.x));
 
 	// Now that all the parts are set up, set the VAO to zero
 	glBindVertexArray(0);
@@ -138,8 +177,12 @@ bool cVAOManager::LoadModelIntoVAO(
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	glDisableVertexAttribArray(vpos_location);
-	glDisableVertexAttribArray(vcol_location);
+	glDisableVertexAttribArray(vertexColour_location);
+	glDisableVertexAttribArray(vertexPosition_location);
+	glDisableVertexAttribArray(vertexNormal_location);
+	glDisableVertexAttribArray(vertexUVx2_location);
+//	glDisableVertexAttribArray(vpos_location);
+//	glDisableVertexAttribArray(vcol_location);
 
 
 	// Store the draw information into the map
@@ -225,10 +268,25 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	// This is set up to match the ply (3d model) file. 
 	// NOT the shader. 
 	// This should match whatever the PLY file has
+	//
+	//	property float x	// position
+	//	property float y
+	//	property float z
+	//	property float nx	// normal
+	//	property float ny
+	//	property float nz
+	//	property uchar red		// diffuseRGBA
+	//	property uchar green
+	//	property uchar blue
+	//	property uchar alpha
+	//	property float texture_u	// TextureUV
+	//	property float texture_v
 	struct sVertPly
 	{
-		glm::vec3 positions;
-//		glm::vec3 normals;		// The mig file has this
+		glm::vec3 position;
+		glm::vec3 normal;		
+		glm::vec4 diffuseRGBA;
+		glm::vec2 textureUV;
 	};
 
 	std::vector<sVertPly> vecTempPlyVerts;
@@ -238,9 +296,29 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; // ::g_NumberOfVertices; 
 		  index++ )
 	{
-		thePlyFile >> tempVert.positions.x;
-		thePlyFile >> tempVert.positions.y; 
-		thePlyFile >> tempVert.positions.z;
+		thePlyFile >> tempVert.position.x;
+		thePlyFile >> tempVert.position.y; 
+		thePlyFile >> tempVert.position.z;
+
+		thePlyFile >> tempVert.normal.x;
+		thePlyFile >> tempVert.normal.y;
+		thePlyFile >> tempVert.normal.z;
+
+		thePlyFile >> tempVert.diffuseRGBA.r;	
+		thePlyFile >> tempVert.diffuseRGBA.b;
+		thePlyFile >> tempVert.diffuseRGBA.g;
+		thePlyFile >> tempVert.diffuseRGBA.a;
+
+		// File has colours from 0-255 (HTML style), but 
+		//	we want them from 0.0f to 1.0f
+		tempVert.diffuseRGBA.r /= 255.0f;
+		tempVert.diffuseRGBA.b /= 255.0f;
+		tempVert.diffuseRGBA.g /= 255.0f;
+		tempVert.diffuseRGBA.a /= 255.0f;
+
+		thePlyFile >> tempVert.textureUV.x;
+		thePlyFile >> tempVert.textureUV.y;
+
 
 		//// HACK:
 		//if (fileName == "assets/models/cow.ply")
@@ -293,14 +371,32 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	//	and copied into a structure that the shader expects...
 	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; index++ )
 	{
-		drawInfo.pVertices[index].x = vecTempPlyVerts[index].positions.x;
-		drawInfo.pVertices[index].y = vecTempPlyVerts[index].positions.y;
-		drawInfo.pVertices[index].z = vecTempPlyVerts[index].positions.z;
+		drawInfo.pVertices[index].vertPosition.x = vecTempPlyVerts[index].position.x;
+		drawInfo.pVertices[index].vertPosition.y = vecTempPlyVerts[index].position.y;
+		drawInfo.pVertices[index].vertPosition.z = vecTempPlyVerts[index].position.z;
+		drawInfo.pVertices[index].vertPosition.w = 1.0f;
 
-		// The files doesn't have colours, so we'll set them to white
-		drawInfo.pVertices[index].r = 1.0f;	// getRand();			 //vecTempPlyVerts[index].colour.r;
-		drawInfo.pVertices[index].g = 1.0f;	// getRand();			//vecTempPlyVerts[index].colour.g;
-		drawInfo.pVertices[index].b = 1.0f;	// getRand();			//vecTempPlyVerts[index].colour.b;
+//		// The files doesn't have colours, so we'll set them to white
+//		drawInfo.pVertices[index].r = 1.0f;	// getRand();			 //vecTempPlyVerts[index].colour.r;
+//		drawInfo.pVertices[index].g = 1.0f;	// getRand();			//vecTempPlyVerts[index].colour.g;
+//		drawInfo.pVertices[index].b = 1.0f;	// getRand();			//vecTempPlyVerts[index].colour.b;
+
+		drawInfo.pVertices[index].vertColour.r = vecTempPlyVerts[index].diffuseRGBA.r;
+		drawInfo.pVertices[index].vertColour.g = vecTempPlyVerts[index].diffuseRGBA.g;
+		drawInfo.pVertices[index].vertColour.b = vecTempPlyVerts[index].diffuseRGBA.b;
+		drawInfo.pVertices[index].vertColour.a = vecTempPlyVerts[index].diffuseRGBA.a;
+
+		drawInfo.pVertices[index].vertNormal.x = vecTempPlyVerts[index].normal.x;
+		drawInfo.pVertices[index].vertNormal.y = vecTempPlyVerts[index].normal.y;
+		drawInfo.pVertices[index].vertNormal.z = vecTempPlyVerts[index].normal.z;
+		drawInfo.pVertices[index].vertNormal.w = 1.0f;
+
+		drawInfo.pVertices[index].vertUVx2.x = vecTempPlyVerts[index].textureUV.x;
+		drawInfo.pVertices[index].vertUVx2.y = vecTempPlyVerts[index].textureUV.y;
+		drawInfo.pVertices[index].vertUVx2.z = vecTempPlyVerts[index].textureUV.x;
+		drawInfo.pVertices[index].vertUVx2.w = vecTempPlyVerts[index].textureUV.y;
+
+
 	}// for ( unsigned int index...
 
 

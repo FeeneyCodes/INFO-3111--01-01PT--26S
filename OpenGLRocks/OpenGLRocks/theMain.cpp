@@ -192,7 +192,7 @@ int main(void)
     ::g_pVAOManager->setBasePath("assets/models");
 
     sModelDrawInfo carModel;
-    if (::g_pVAOManager->LoadModelIntoVAO("de--lorean.ply", carModel, program))
+    if (::g_pVAOManager->LoadModelIntoVAO("de--lorean_xyz_n_rgba_uv.ply", carModel, program))
     {
         std::cout << "Loaded " << carModel.meshName << std::endl;
         std::cout << "\t" << carModel.numberOfVertices << " vertices" << std::endl;
@@ -203,19 +203,19 @@ int main(void)
     }
 
     sModelDrawInfo cowModel;
-    ::g_pVAOManager->LoadModelIntoVAO("cow.ply", cowModel, program);
+    ::g_pVAOManager->LoadModelIntoVAO("cow_xyz_n_rgba_uv.ply", cowModel, program);
 
     sModelDrawInfo mig29Model;
-    ::g_pVAOManager->LoadModelIntoVAO("mig29_xyz_only.ply", mig29Model, program);
+    ::g_pVAOManager->LoadModelIntoVAO("mig29_xyz_n_rgba_uv.ply", mig29Model, program);
 
     sModelDrawInfo bunnyModel;
-    ::g_pVAOManager->LoadModelIntoVAO("bun_zipper_xyz.ply", bunnyModel, program);
+    ::g_pVAOManager->LoadModelIntoVAO("bun_zipper_xyz_n_rgba_uv.ply", bunnyModel, program);
 
-    sModelDrawInfo terrainModel;
-    ::g_pVAOManager->LoadModelIntoVAO("terrain_xyz.ply", terrainModel, program);
+     sModelDrawInfo terrainModel;
+    ::g_pVAOManager->LoadModelIntoVAO("terrain_xyz_n_rgba_uv.ply", terrainModel, program);
 
     cMesh* pTerrain = new cMesh();
-    pTerrain->meshName = "terrain_xyz.ply";
+    pTerrain->meshName = "terrain_xyz_n_rgba_uv.ply";
     pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
     pTerrain->bIsWireFrame = true;
     pTerrain->rotation.x = -90.0f;
@@ -223,15 +223,23 @@ int main(void)
     ::g_vec_pMeshes.push_back(pTerrain);
 
     // Add the models we want to draw
+    cMesh* pCar = new cMesh();
+    pCar->meshName = "de--lorean_xyz_n_rgba_uv.ply";
+    pCar->position = glm::vec3(0.0f, -15.0f, 0.0f);
+    pCar->scale = 1.0f / 10.0f;
+    pCar->bIsWireFrame = true;
+    pCar->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    // Add the models we want to draw
     cMesh* pCow = new cMesh();
-    pCow->meshName = "cow.ply";
+    pCow->meshName = "cow_xyz_n_rgba_uv.ply";
     pCow->position = glm::vec3(0.0f, 0.0f, -2.0f);
     pCow->scale = 1.0f / 10.0f;
     pCow->bIsWireFrame = true;
     pCow->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
 
     cMesh* pPlane = new cMesh();
-    pPlane->meshName = "mig29_xyz_only.ply";
+    pPlane->meshName = "mig29_xyz_n_rgba_uv.ply";
     pPlane->position = glm::vec3(0.0f, 2.0f, 0.0f);
     pPlane->rotation.x = 45.0f;
     pPlane->rotation.y = 15.0f;
@@ -239,12 +247,12 @@ int main(void)
     pPlane->diffuseRGB = glm::vec3(1.0f, 0.0f, 0.0f);
 
     cMesh* pBunny1 = new cMesh();
-    pBunny1->meshName = "bun_zipper_xyz.ply";
+    pBunny1->meshName = "bun_zipper_xyz_n_rgba_uv.ply";
     pBunny1->position.x = 2.0f;
     pBunny1->diffuseRGB = glm::vec3(0.6f, 0.3f, 0.7f);
 
     cMesh* pBunny2 = new cMesh();
-    pBunny2->meshName = "bun_zipper_xyz.ply";
+    pBunny2->meshName = "bun_zipper_xyz_n_rgba_uv.ply";
     pBunny2->position.x = 3.0f;
     pBunny2->scale = 1.5f;
     pBunny1->diffuseRGB = glm::vec3(0.3f, 0.7f, 0.6f);
@@ -257,7 +265,7 @@ int main(void)
     ::g_vec_pMeshes.push_back(pPlane);
     ::g_vec_pMeshes.push_back(pBunny1);
     ::g_vec_pMeshes.push_back(pBunny2);
- //   ::g_vec_pMeshes.push_back(pCar);
+    ::g_vec_pMeshes.push_back(pCar);
 
     // Create a camera
     ::g_pFlyCamera = new cBasicFlyCamera();
@@ -276,7 +284,13 @@ int main(void)
 
         // Clears the screen
         //glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+
+
 
         // "p" for "projection"
         glm::mat4 matProj 

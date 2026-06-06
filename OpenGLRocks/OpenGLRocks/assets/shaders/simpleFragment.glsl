@@ -1,6 +1,10 @@
 #version 330
 
-in vec3 color;
+//in vec3 color;
+in vec4 vModelColour;
+in vec4 vNormal;
+in vec4 vWorldPosition;
+in vec4 vVertexUVx2;
 
 out vec4 fragment;	// to the screen
 
@@ -36,8 +40,13 @@ vec4 calcualteLightContrib( vec3 vertexMaterialColour, vec3 vertexNormal,
 
 void main()
 {
+// in vec4 vModelColour;
+// in vec4 vNormal;
+// in vec4 vWorldPosition;
+// in vec4 vVertexUVx2;
+
 	// This is the colour of the pixel
-	vec3 pixelColour = color;
+	vec3 pixelColour = vModelColour.rgb;
 	// Trick the compiler
 	pixelColour.rgb *= 0.00001f;	// Effectively gone
 	pixelColour.rgb += theColour.rgb;

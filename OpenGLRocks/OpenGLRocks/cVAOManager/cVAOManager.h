@@ -6,6 +6,8 @@
 
 #include <string>
 #include <map>
+#include <glm/glm.hpp>
+#include <glm/vec4.hpp>
 
 // The vertex structure, as it is in the SHADER (on the GPU)
 // This is also called the 'vertex layout'. 
@@ -14,12 +16,24 @@
 //
 // in vec3 vCol;
 // in vec3 vPos;
+//struct sVert
+//{
+//	float x, y, z;		// vPos
+//	float r, g, b;		// vCol
+//};
+
+// Now our vertex shader has a vertex layout like this:
+//	in vec4 vertexColour;		// RGBA
+//	in vec4 vertexPosition;		// XYZ (w not used)
+//	in vec4 vertexNormal;		// XYZ (w not used)
+//	in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
 struct sVert
 {
-	float x, y, z;		// vPos
-	float r, g, b;		// vCol
+	glm::vec4 vertColour;		//	in vec4 vertexColour;		// RGBA
+	glm::vec4 vertPosition;		//	in vec4 vertexPosition;		// XYZ (w not used)
+	glm::vec4 vertNormal;		//	in vec4 vertexNormal;		// XYZ (w not used)
+	glm::vec4 vertUVx2;			//	in vec4 vertexUVx2;			// 2 sets of UVs (because it's a vec4)
 };
-
 
 // This represents a single mesh (3D object) structure in 'indexed' format. 
 // Its layout is set up to match how the GPU sees the mesh, rather
