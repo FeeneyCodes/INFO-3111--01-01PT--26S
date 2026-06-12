@@ -1,16 +1,13 @@
 #pragma once
 
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/glad.h>
-//#include "include/glad/glad.h"
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include <stdlib.h>
 
 #include "cBasicFlyCamera/cBasicFlyCamera.h"
+#include "cLightManager.h"
 
 extern cBasicFlyCamera* g_pFlyCamera;
+
+extern cLightManager* g_pLightManager;
 
 // Only function signatures
 float getRand(void);

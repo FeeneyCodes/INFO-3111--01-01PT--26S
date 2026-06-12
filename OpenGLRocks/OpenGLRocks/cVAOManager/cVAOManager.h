@@ -71,11 +71,13 @@ public:
 
 	bool LoadModelIntoVAO(std::string fileName, 
 						  sModelDrawInfo &drawInfo, 
-						  unsigned int shaderProgramID);
-
+						  unsigned int shaderProgramID, 
+		                  bool bHasNormals = true,
+		                  bool bHasRGBAColours = true,
+		                  bool bHasUVCoords = true);
 	// you Could do this where it doesn't return the draw info object
-	bool LoadModelIntoVAO(std::string fileName, 
-						  unsigned int shaderProgramID);
+	//bool LoadModelIntoVAO(std::string fileName, 
+	//					  unsigned int shaderProgramID);
 
 	//bool LoadModelIntoVAO_XYZ_Normals(std::string fileName, 
 	//					  sModelDrawInfo &drawInfo, 
@@ -102,7 +104,10 @@ private:
 
 	// Loads the ply model file into a temporary array
 	bool m_LoadTheModel( std::string fileName, 
-						 sModelDrawInfo &drawInfo);
+						 sModelDrawInfo &drawInfo,
+		                 bool bHasNormals,
+		                 bool bHasRGBAColours,
+		                 bool bHasUVCoords);
 
 	std::string m_lastErrorString;
 	void m_AppendTextToLastError(std::string text, bool addNewLineBefore = true);

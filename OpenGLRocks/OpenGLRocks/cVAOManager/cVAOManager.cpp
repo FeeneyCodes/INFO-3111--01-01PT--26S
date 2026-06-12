@@ -1,7 +1,7 @@
 #include "cVAOManager.h"
 
-//#include "globalOpenGLStuff.h"
-#include "../globalStuff.h"
+#include "../globalOpenGLStuff.h"	// include JUST the OpenGL stuff
+//#include "../globalStuff.h"
 
 #include <fstream>
 
@@ -50,7 +50,10 @@ void cVAOManager::setBasePath(std::string newBasePath)
 bool cVAOManager::LoadModelIntoVAO(
 		std::string fileName, 
 		sModelDrawInfo &drawInfo,
-	    unsigned int shaderProgramID)
+	    unsigned int shaderProgramID,
+	    bool bHasNormals /*=true*/,
+	    bool bHasRGBAColours /*=true*/,
+	    bool bHasUVCoords /*=true*/)
 
 {
 	// Load the model from file
@@ -63,7 +66,7 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	// Make sure that the LoadTheModel is loading the specific format 
 	//	for *that* file. xyz, xyz+n, xyz+colour, xyz+colour+normal
-	if ( ! this->m_LoadTheModel( fullFileNameWithPath, drawInfo ) )
+	if ( ! this->m_LoadTheModel( fullFileNameWithPath, drawInfo, bHasNormals, bHasRGBAColours, bHasUVCoords ) )
 	{
 		this->m_AppendTextToLastError( "Didn't load model", true );
 		return false;
@@ -217,7 +220,10 @@ bool cVAOManager::FindDrawInfoByModelName(
 
 
 bool cVAOManager::m_LoadTheModel(std::string fileName,
-								 sModelDrawInfo &drawInfo )
+								 sModelDrawInfo &drawInfo,
+	                             bool bHasNormals,
+	                             bool bHasRGBAColours,
+	                             bool bHasUVCoords)
 {
 	// Open the file. 
 	// Read until we hit the word "vertex"
@@ -283,10 +289,10 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	//	property float texture_v
 	struct sVertPly
 	{
-		glm::vec3 position;
-		glm::vec3 normal;		
-		glm::vec4 diffuseRGBA;
-		glm::vec2 textureUV;
+		glm::vec3 position = glm::vec3(0.0f);
+		glm::vec3 normal = glm::vec3(0.0f);
+		glm::vec4 diffuseRGBA = glm::vec4(1.0f); // White and not transparent
+		glm::vec2 textureUV = glm::vec2(0.0f);
 	};
 
 	std::vector<sVertPly> vecTempPlyVerts;
@@ -300,24 +306,32 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 		thePlyFile >> tempVert.position.y; 
 		thePlyFile >> tempVert.position.z;
 
-		thePlyFile >> tempVert.normal.x;
-		thePlyFile >> tempVert.normal.y;
-		thePlyFile >> tempVert.normal.z;
+		if (bHasNormals)
+		{
+			thePlyFile >> tempVert.normal.x;
+			thePlyFile >> tempVert.normal.y;
+			thePlyFile >> tempVert.normal.z;
+		}
 
-		thePlyFile >> tempVert.diffuseRGBA.r;	
-		thePlyFile >> tempVert.diffuseRGBA.b;
-		thePlyFile >> tempVert.diffuseRGBA.g;
-		thePlyFile >> tempVert.diffuseRGBA.a;
+		if (bHasRGBAColours)
+		{
+			thePlyFile >> tempVert.diffuseRGBA.r;
+			thePlyFile >> tempVert.diffuseRGBA.b;
+			thePlyFile >> tempVert.diffuseRGBA.g;
+			thePlyFile >> tempVert.diffuseRGBA.a;
+			// File has colours from 0-255 (HTML style), but 
+			//	we want them from 0.0f to 1.0f
+			tempVert.diffuseRGBA.r /= 255.0f;
+			tempVert.diffuseRGBA.b /= 255.0f;
+			tempVert.diffuseRGBA.g /= 255.0f;
+			tempVert.diffuseRGBA.a /= 255.0f;
+		}
 
-		// File has colours from 0-255 (HTML style), but 
-		//	we want them from 0.0f to 1.0f
-		tempVert.diffuseRGBA.r /= 255.0f;
-		tempVert.diffuseRGBA.b /= 255.0f;
-		tempVert.diffuseRGBA.g /= 255.0f;
-		tempVert.diffuseRGBA.a /= 255.0f;
-
-		thePlyFile >> tempVert.textureUV.x;
-		thePlyFile >> tempVert.textureUV.y;
+		if (bHasUVCoords)
+		{
+			thePlyFile >> tempVert.textureUV.x;
+			thePlyFile >> tempVert.textureUV.y;
+		}
 
 
 		//// HACK:

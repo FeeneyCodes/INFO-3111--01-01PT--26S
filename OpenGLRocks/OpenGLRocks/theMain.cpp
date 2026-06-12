@@ -3,6 +3,7 @@
 ////#include "include/glad/glad.h"
 //#define GLFW_INCLUDE_NONE
 //#include <GLFW/glfw3.h>
+#include "globalOpenGLStuff.h"
 #include "globalStuff.h"
 
 #include <iostream>
@@ -58,6 +59,8 @@ glm::vec3 g_upAxis = glm::vec3(0.0f, +1.0f, 0.0f);// What's up
 cVAOManager* g_pVAOManager = NULL;
 
 cBasicFlyCamera* g_pFlyCamera = NULL;
+
+cLightManager* g_pLightManager = NULL;
 
 // note these are pointers
 std::vector< cMesh* > g_vec_pMeshes;
@@ -214,10 +217,24 @@ int main(void)
      sModelDrawInfo terrainModel;
     ::g_pVAOManager->LoadModelIntoVAO("terrain_xyz_n_rgba_uv.ply", terrainModel, program);
 
+    ::g_pVAOManager->setBasePath("assets/models/Dungeon_models/Additions");
+
+     sModelDrawInfo wellModel;
+    ::g_pVAOManager->LoadModelIntoVAO("SM_Env_Camp_Well_01.ply", wellModel, program);
+
+
+    cMesh* pWell = new cMesh();
+    pWell->meshName = "SM_Env_Camp_Well_01.ply";
+    //pWell->bIsWireFrame = true;
+    pWell->scale = 0.1f;
+    pWell->position.z = 50.0f;
+    ::g_vec_pMeshes.push_back(pWell);
+
+
     cMesh* pTerrain = new cMesh();
     pTerrain->meshName = "terrain_xyz_n_rgba_uv.ply";
     pTerrain->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
-    pTerrain->bIsWireFrame = true;
+    //pTerrain->bIsWireFrame = true;
     pTerrain->rotation.x = -90.0f;
     pTerrain->position.y = -50.0f;
     ::g_vec_pMeshes.push_back(pTerrain);
@@ -225,9 +242,11 @@ int main(void)
     // Add the models we want to draw
     cMesh* pCar = new cMesh();
     pCar->meshName = "de--lorean_xyz_n_rgba_uv.ply";
-    pCar->position = glm::vec3(0.0f, -15.0f, 0.0f);
-    pCar->scale = 1.0f / 10.0f;
-    pCar->bIsWireFrame = true;
+    pCar->position = glm::vec3(0.0f, -8.0f, 0.0f);
+    pCar->rotation.x = -90.0f;
+    pCar->rotation.y = 90.0f;
+    pCar->scale = 1.0f / 2.0f;
+    //pCar->bIsWireFrame = true;
     pCar->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
 
     // Add the models we want to draw
@@ -257,10 +276,6 @@ int main(void)
     pBunny2->scale = 1.5f;
     pBunny1->diffuseRGB = glm::vec3(0.3f, 0.7f, 0.6f);
 
-    //cMesh* pCar = new cMesh();
-    //pCar->meshName = "de--lorean.ply";
-    //pCar->position = glm::vec3(0.0f, 0.0f, 0.0f);
-
     ::g_vec_pMeshes.push_back(pCow);
     ::g_vec_pMeshes.push_back(pPlane);
     ::g_vec_pMeshes.push_back(pBunny1);
@@ -270,6 +285,21 @@ int main(void)
     // Create a camera
     ::g_pFlyCamera = new cBasicFlyCamera();
     ::g_pFlyCamera->setEyeLocation(0.0f, 0.0f, -5.0f);
+
+
+    // Light manager
+    ::g_pLightManager = new cLightManager();
+    ::g_pLightManager->SetupUniformShaderLocations(program);
+
+    // Set up the lights
+    ::g_pLightManager->myLights[0].bIsOn = true;
+    ::g_pLightManager->myLights[0].lightType = cLight::POINT_LIGHT;
+    // Place light 20 units above the origin
+    ::g_pLightManager->myLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
+
+    ::g_pLightManager->myLights[0].attenuationConstant = 0.0f;
+    ::g_pLightManager->myLights[0].attenuationLinear = 0.01f;
+    ::g_pLightManager->myLights[0].attenuationQuadratic = 0.001f;
 
 
 
@@ -287,9 +317,20 @@ int main(void)
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
 
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+        // Enable depth buffer (and culling)
+        // - Add DEPTH_BUFFER_BIT to clear depth buffer
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);    
 
+        glEnable(GL_DEPTH_TEST);    // Turn on depth checking
+        glDepthFunc(GL_LESS);       // The depth compare function
+
+        
+        // Pass the eye (camera) location to the shader for specular
+        // uniform vec3 eyeLocation;
+        GLint eyeLocation_UL = glGetUniformLocation(program, "eyeLocation");
+        glm::vec3 eyeLocationXYZ = ::g_pFlyCamera->getEyeLocation();
+        glUniform3f(eyeLocation_UL,
+                    eyeLocationXYZ.x, eyeLocationXYZ.y, eyeLocationXYZ.z);
 
 
         // "p" for "projection"
@@ -305,6 +346,23 @@ int main(void)
                            ::g_pFlyCamera->getTargetLocation(), // ::g_atPosition,
                            ::g_upAxis);
 
+        // uniform mat4 mView;
+        GLint mView_location = glGetUniformLocation(program, "mView");
+        glUniformMatrix4fv(mView_location,
+            1,
+            GL_FALSE,
+            (const GLfloat*)&matView);
+
+        // uniform mat4 mProject;
+        GLint mProject_location = glGetUniformLocation(program, "mProject");
+        glUniformMatrix4fv(mProject_location,
+            1,
+            GL_FALSE,
+            (const GLfloat*)&matProj);
+
+
+        // Copy light info to shader for this frame
+        ::g_pLightManager->CopyLightInfoToShader(program);
 
 
         for (std::vector<cMesh*>::iterator it_pMesh = ::g_vec_pMeshes.begin();
@@ -358,16 +416,20 @@ int main(void)
 
             matModel = matTranslate * matModel;     // 1st to be applied
 
-
+            // uniform mat4 mModel;
+            GLint mModel_location = glGetUniformLocation(program, "mModel");
+            glUniformMatrix4fv(mModel_location,
+                1,
+                GL_FALSE,
+                (const GLfloat*)&matModel);
             //mvp  -- pvm
-            glm::mat4x4 mvp = matProj * matView * matModel;
-
-
-            const GLint mvp_location = glGetUniformLocation(program, "MVP");
-            glUniformMatrix4fv( mvp_location,
-                                1, 
-                                GL_FALSE, 
-                                (const GLfloat*)&mvp);
+//            glm::mat4x4 mvp = matProj * matView * matModel;
+//
+//            const GLint mvp_location = glGetUniformLocation(program, "MVP");
+//            glUniformMatrix4fv( mvp_location,
+//                                1, 
+//                                GL_FALSE, 
+//                                (const GLfloat*)&mvp);
 
 
             //        glPointSize(10.0f);

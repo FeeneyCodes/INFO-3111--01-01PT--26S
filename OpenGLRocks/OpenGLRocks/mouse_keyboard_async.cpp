@@ -1,6 +1,8 @@
 // for non keyboard callback handling
 
-#include "globalStuff.h"
+#include "../globalOpenGLStuff.h"       // Just the OpenGL stuff
+#include "../globalStuff.h"             // Global items (like the camera)
+ 
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 #include <iostream>

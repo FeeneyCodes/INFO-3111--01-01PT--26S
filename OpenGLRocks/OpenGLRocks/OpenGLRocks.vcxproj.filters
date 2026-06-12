@@ -22,6 +22,9 @@
     <Filter Include="FlyCamera">
       <UniqueIdentifier>{39cec91b-1945-4990-b426-5f7ee64081a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LightManager">
+      <UniqueIdentifier>{528c11db-0b1d-44a7-97e7-59c5f53cd86b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="theMain.cpp">
@@ -45,6 +48,9 @@
     <ClCompile Include="mouse_keyboard_async.cpp">
       <Filter>FlyCamera</Filter>
     </ClCompile>
+    <ClCompile Include="cLightManager.cpp">
+      <Filter>LightManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">
@@ -61,6 +67,12 @@
     </ClInclude>
     <ClInclude Include="cBasicFlyCamera\cBasicFlyCamera.h">
       <Filter>FlyCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="cLightManager.h">
+      <Filter>LightManager</Filter>
+    </ClInclude>
+    <ClInclude Include="globalOpenGLStuff.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

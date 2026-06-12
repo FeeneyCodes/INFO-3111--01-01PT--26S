@@ -27,7 +27,7 @@ struct sLight
 };
 
 const int NUMBEROFLIGHTS = 8;
-sLight theLights[NUMBEROFLIGHTS];
+uniform sLight theLights[NUMBEROFLIGHTS];
 
 const int POINT_LIGHT_TYPE = 0;
 const int SPOT_LIGHT_TYPE = 1;
@@ -46,11 +46,17 @@ void main()
 // in vec4 vVertexUVx2;
 
 	// This is the colour of the pixel
-	vec3 pixelColour = vModelColour.rgb;
+	vec3 vertexColour = vModelColour.rgb;
 	// Trick the compiler
-	pixelColour.rgb *= 0.00001f;	// Effectively gone
-	pixelColour.rgb += theColour.rgb;
-    fragment = vec4(pixelColour, 1.0);
+	vertexColour.rgb *= 0.00001f;	// Effectively gone
+	vertexColour.rgb += theColour.rgb;
+//    fragment = vec4(vertexColour, 1.0);
+	
+	vec4 vertexSpecular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	fragment = calcualteLightContrib( vertexColour, 
+	                                  vNormal.xyz, 
+									  vWorldPosition.xyz, 
+									  vertexSpecular);
 }
 
 

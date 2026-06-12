@@ -1,6 +1,9 @@
 #version 330
 
-uniform mat4 MVP;	
+//uniform mat4 MVP;	
+uniform mat4 mModel;
+uniform mat4 mView;
+uniform mat4 mProject;
 
 //in vec3 vCol;
 //in vec3 vPos;
@@ -18,12 +21,16 @@ out vec4 vVertexUVx2;
 void main()
 {
 	// This is the position of the vertes ON SCREEN
-    gl_Position = MVP * vec4(vertexPosition.xyz, 1.0);
+	mat4 matMVP = mProject * mView * mModel;
+	
+    gl_Position = matMVP * vec4(vertexPosition.xyz, 1.0f);
     
-	// We are going to do something with these next week...
-	// ...but for now, we'll just pass them along
-	vNormal = vertexNormal;
-	vWorldPosition = gl_Position;
+	// Multiply by the "inverse transpose" of the world matrix to 
+	//	leave only rotational transformations
+	vNormal = inverse(transpose(mModel)) * vertexNormal;
+
+	// World position of vertex is just using the world (model) matrix
+	vWorldPosition = mModel * vec4(vertexPosition.xyz, 1.0f);
 	
 	// Pass unchanged to the fragment shader
 	vModelColour = vertexColour;

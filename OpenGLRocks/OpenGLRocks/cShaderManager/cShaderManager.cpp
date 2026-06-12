@@ -1,6 +1,7 @@
 #include "cShaderManager.h"
 
-#include "../globalStuff.h"	// glad and GLFW things
+#include "../globalOpenGLStuff.h"	// Include just the OpenGL stuff
+//#include "../globalStuff.h"
 
 #include <fstream>
 #include <sstream>		// "string stream"
