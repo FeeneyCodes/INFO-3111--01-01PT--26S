@@ -50,9 +50,9 @@ void main()
 	// Trick the compiler
 	vertexColour.rgb *= 0.00001f;	// Effectively gone
 	vertexColour.rgb += theColour.rgb;
-//    fragment = vec4(vertexColour, 1.0);
+    //fragment = vec4(vertexColour, 1.0);
 	
-	vec4 vertexSpecular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	vec4 vertexSpecular = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	fragment = calcualteLightContrib( vertexColour, 
 	                                  vNormal.xyz, 
 									  vWorldPosition.xyz, 

@@ -272,8 +272,7 @@ int main(void)
 
     cMesh* pBunny2 = new cMesh();
     pBunny2->meshName = "bun_zipper_xyz_n_rgba_uv.ply";
-    pBunny2->position.x = 3.0f;
-    pBunny2->scale = 1.5f;
+    pBunny2->scale = 5.0f;
     pBunny1->diffuseRGB = glm::vec3(0.3f, 0.7f, 0.6f);
 
     ::g_vec_pMeshes.push_back(pCow);
@@ -295,7 +294,9 @@ int main(void)
     ::g_pLightManager->myLights[0].bIsOn = true;
     ::g_pLightManager->myLights[0].lightType = cLight::POINT_LIGHT;
     // Place light 20 units above the origin
-    ::g_pLightManager->myLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
+    ::g_pLightManager->myLights[0].position = glm::vec3(-50.0f, 20.0f, 0.0f);
+    // Bright white light
+    ::g_pLightManager->myLights[0].diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     ::g_pLightManager->myLights[0].attenuationConstant = 0.0f;
     ::g_pLightManager->myLights[0].attenuationLinear = 0.01f;
@@ -305,6 +306,8 @@ int main(void)
 
     while ( ! glfwWindowShouldClose(window) )
     {
+
+        ::g_pLightManager->myLights[0].position.x += 0.1f;
 
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);

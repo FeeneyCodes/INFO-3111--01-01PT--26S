@@ -76,10 +76,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\simpleFragment.glsl">
+    <None Include="assets\shaders\simpleVertex.glsl">
       <Filter>cShaderManager</Filter>
     </None>
-    <None Include="assets\shaders\simpleVertex.glsl">
+    <None Include="assets\shaders\simpleFragment.glsl">
       <Filter>cShaderManager</Filter>
     </None>
   </ItemGroup>
