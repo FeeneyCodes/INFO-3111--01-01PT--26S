@@ -12,6 +12,9 @@ uniform vec3 theColour;
 
 uniform vec3 eyeLocation;
 
+// There is no bool, it's really a float
+uniform bool bDoNotLight;
+
 struct sLight
 {
 	vec4 position;	// xyz, ignoring w (4th parameter)	
@@ -52,11 +55,20 @@ void main()
 	vertexColour.rgb += theColour.rgb;
     //fragment = vec4(vertexColour, 1.0);
 	
-	vec4 vertexSpecular = vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	fragment = calcualteLightContrib( vertexColour, 
-	                                  vNormal.xyz, 
-									  vWorldPosition.xyz, 
-									  vertexSpecular);
+	if ( bDoNotLight )
+	{
+		fragment.rgb = vertexColour.rgb;
+		fragment.a = 1.0f;
+	}
+	else
+	{
+		// Normal lighting...
+		vec4 vertexSpecular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		fragment = calcualteLightContrib( vertexColour, 
+										  vNormal.xyz, 
+										  vWorldPosition.xyz, 
+										  vertexSpecular);
+	}
 }
 
 

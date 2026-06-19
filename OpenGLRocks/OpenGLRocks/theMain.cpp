@@ -87,7 +87,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void handleKeyboardAsync(GLFWwindow* window);
 void handleMouseAsync(GLFWwindow* window);
 
-
+// In DrawObject.cpp
+void DrawObject(cMesh* pTheMesh, GLuint program);
 
 // Load a ply file and put it into the pVertice array
 //void LoadAModelFromFile(std::string fileName);
@@ -218,9 +219,45 @@ int main(void)
     ::g_pVAOManager->LoadModelIntoVAO("terrain_xyz_n_rgba_uv.ply", terrainModel, program);
 
     ::g_pVAOManager->setBasePath("assets/models/Dungeon_models/Additions");
-
      sModelDrawInfo wellModel;
     ::g_pVAOManager->LoadModelIntoVAO("SM_Env_Camp_Well_01.ply", wellModel, program);
+
+
+    ::g_pVAOManager->setBasePath("assets/models");
+    // Also load the light debug spheres...
+     sModelDrawInfo debugSphere01Model;
+    ::g_pVAOManager->LoadModelIntoVAO("Isoshphere_flat_3div_xyz_n_rgba_uv.ply", 
+                                      debugSphere01Model, program);
+
+     sModelDrawInfo debugSphere02Model;
+    ::g_pVAOManager->LoadModelIntoVAO("Isoshphere_flat_4div_xyz_n_rgba_uv.ply", 
+                                      debugSphere02Model, program);
+
+     sModelDrawInfo debugSphere03Model;
+    ::g_pVAOManager->LoadModelIntoVAO("Isoshphere_smooth_inverted_normals_xyz_n_rgba_uv.ply", 
+                                      debugSphere03Model, program);
+
+    cMesh* pDebugSphere01 = new cMesh();
+    pDebugSphere01->meshName = "Isoshphere_flat_3div_xyz_n_rgba_uv.ply";
+    pDebugSphere01->friendlyName = "DebugSphere1";
+    pDebugSphere01->scale = 3.0f;
+    pDebugSphere01->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+    pDebugSphere01->bIsVisible = false;
+
+    cMesh* pDebugSphere02 = new cMesh();
+    pDebugSphere02->meshName = "Isoshphere_flat_4div_xyz_n_rgba_uv.ply";
+    pDebugSphere02->friendlyName = "DebugSphere2";
+    pDebugSphere02->bIsVisible = false;
+
+    cMesh* pDebugSphere03 = new cMesh();
+    pDebugSphere03->meshName = "Isoshphere_smooth_inverted_normals_xyz_n_rgba_uv.ply";
+    pDebugSphere03->friendlyName = "DebugSphere3";
+    pDebugSphere03->bIsVisible = false;
+
+    g_vec_pMeshes.push_back(pDebugSphere01);
+    g_vec_pMeshes.push_back(pDebugSphere02);
+    g_vec_pMeshes.push_back(pDebugSphere03);
+
 
 
     cMesh* pWell = new cMesh();
@@ -257,6 +294,7 @@ int main(void)
     pCow->bIsWireFrame = true;
     pCow->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
 
+
     cMesh* pPlane = new cMesh();
     pPlane->meshName = "mig29_xyz_n_rgba_uv.ply";
     pPlane->position = glm::vec3(0.0f, 2.0f, 0.0f);
@@ -273,6 +311,7 @@ int main(void)
     cMesh* pBunny2 = new cMesh();
     pBunny2->meshName = "bun_zipper_xyz_n_rgba_uv.ply";
     pBunny2->scale = 5.0f;
+    pBunny2->position.x = +10.0f;
     pBunny1->diffuseRGB = glm::vec3(0.3f, 0.7f, 0.6f);
 
     ::g_vec_pMeshes.push_back(pCow);
@@ -280,6 +319,8 @@ int main(void)
     ::g_vec_pMeshes.push_back(pBunny1);
     ::g_vec_pMeshes.push_back(pBunny2);
     ::g_vec_pMeshes.push_back(pCar);
+
+
 
     // Create a camera
     ::g_pFlyCamera = new cBasicFlyCamera();
@@ -294,7 +335,7 @@ int main(void)
     ::g_pLightManager->myLights[0].bIsOn = true;
     ::g_pLightManager->myLights[0].lightType = cLight::POINT_LIGHT;
     // Place light 20 units above the origin
-    ::g_pLightManager->myLights[0].position = glm::vec3(-50.0f, 20.0f, 0.0f);
+    ::g_pLightManager->myLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
     // Bright white light
     ::g_pLightManager->myLights[0].diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -306,8 +347,6 @@ int main(void)
 
     while ( ! glfwWindowShouldClose(window) )
     {
-
-        ::g_pLightManager->myLights[0].position.x += 0.1f;
 
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
@@ -368,6 +407,7 @@ int main(void)
         ::g_pLightManager->CopyLightInfoToShader(program);
 
 
+        // Now draw all the objects in the scene vector
         for (std::vector<cMesh*>::iterator it_pMesh = ::g_vec_pMeshes.begin();
              it_pMesh != ::g_vec_pMeshes.end(); 
              it_pMesh++)
@@ -375,109 +415,30 @@ int main(void)
 
             cMesh* pTheMesh = *it_pMesh;            // Gives us pointer to mesh
 
+            // TODO:
+            DrawObject(pTheMesh, program);
 
-            // Set to the "identity matrix"
-            glm::mat4 matModel = glm::mat4(1.0f);         // "m"    //mat4x4 m, p, mvp;
-       
-
-            // Transformations 
-            glm::mat4 matTranslate
-                = glm::translate(glm::mat4(1.0f),
-                    glm::vec3( pTheMesh->position.x,
-                               pTheMesh->position.y,
-                               pTheMesh->position.z) );
-
-            glm::mat4 matRotateX
-                = glm::rotate( glm::mat4(1.0f),
-                               glm::radians<float>(pTheMesh->rotation.x),
-                               glm::vec3(1.0f, 0.0f, 0.0f));
-
-            glm::mat4 matRotateY  
-                = glm::rotate( glm::mat4(1.0f),
-                               glm::radians<float>(pTheMesh->rotation.y),
-                               glm::vec3(0.0f, 1.0f, 0.0f));
-
-            glm::mat4 matRotateZ 
-                = glm::rotate( glm::mat4(1.0f),
-                               glm::radians<float>(pTheMesh->rotation.z),
-                               glm::vec3(0.0f, 0.0f, 1.0f));
-
-
-            glm::mat4 matScale
-                = glm::scale(glm::mat4(1.0f),
-                    glm::vec3( pTheMesh->scale,
-                               pTheMesh->scale,
-                               pTheMesh->scale) );
-
-      
-            // combine the rotation
-            matModel = matScale * matModel;         // last to be applied
-        
-            matModel = matRotateX * matModel;
-            matModel = matRotateY * matModel;
-            matModel = matRotateZ * matModel;
-
-            matModel = matTranslate * matModel;     // 1st to be applied
-
-            // uniform mat4 mModel;
-            GLint mModel_location = glGetUniformLocation(program, "mModel");
-            glUniformMatrix4fv(mModel_location,
-                1,
-                GL_FALSE,
-                (const GLfloat*)&matModel);
-            //mvp  -- pvm
-//            glm::mat4x4 mvp = matProj * matView * matModel;
-//
-//            const GLint mvp_location = glGetUniformLocation(program, "MVP");
-//            glUniformMatrix4fv( mvp_location,
-//                                1, 
-//                                GL_FALSE, 
-//                                (const GLfloat*)&mvp);
-
-
-            //        glPointSize(10.0f);
-            if (pTheMesh->bIsWireFrame)
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            }
-            else
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-
-
-            // Get the uniform for the colour
-            // uniform vec3 theColour;
-            GLint theColour_UL = glGetUniformLocation(program, "theColour");
-
-            glUniform3f( theColour_UL,
-                         pTheMesh->diffuseRGB.r,
-                         pTheMesh->diffuseRGB.g,
-                         pTheMesh->diffuseRGB.b);
- 
-
-            std::string meshNameToDraw = pTheMesh->meshName;
-
-            sModelDrawInfo modelToDraw;
-            if ( g_pVAOManager->FindDrawInfoByModelName(meshNameToDraw, modelToDraw) )
-            {
-                glBindVertexArray(modelToDraw.VAO_ID);
-
-                glDrawElements(GL_TRIANGLES, 
-                               modelToDraw.numberOfIndices, 
-                               GL_UNSIGNED_INT, 
-                               (void*)0);              // Starting index
-
-                glBindVertexArray(0);
-            }//if ( g_pVAOManager
-
-
-
+            
         }//for (std::vector<cMesh*>
 
 
+        // DRAW DEBUG SPHERES AROUND LIGHTS
+        cMesh* pDebugSphere = g_pFindMeshByFriendlyName("DebugSphere1");
+        pDebugSphere->bIsVisible = true;
+        pDebugSphere->bIsWireFrame = true;
+        pDebugSphere->bDoNotLight = true;
+
+        pDebugSphere->position = g_pLightManager->myLights[0].position;
+        pDebugSphere->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+        pDebugSphere->scale = 0.2f;
+
+        DrawObject(pDebugSphere, program);
+
+        pDebugSphere->bIsVisible = false;
 
 
+
+        // Present what we drew to the screen..
         glfwSwapBuffers(window);
         
         // GLFW checks the mouse and keyboard
@@ -572,3 +533,25 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error: %s\n", description);
 }
 
+
+
+
+// Reutrn NULL if isn't found
+cMesh* g_pFindMeshByFriendlyName(std::string nameToFind)
+{
+    // Up to about 100-200 object is faster using a linear search
+    for (std::vector<cMesh*>::iterator it_pMesh = ::g_vec_pMeshes.begin();
+        it_pMesh != ::g_vec_pMeshes.end();
+        it_pMesh++)
+    {
+        cMesh* pTheMesh = *it_pMesh;
+
+        // Is this it? 
+        if (pTheMesh->friendlyName == nameToFind)
+        {
+            return pTheMesh;
+        }
+    }
+    // Didn't find it 
+    return NULL;
+}

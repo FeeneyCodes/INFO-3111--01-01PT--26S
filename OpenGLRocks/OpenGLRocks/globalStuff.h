@@ -4,6 +4,7 @@
 
 #include "cBasicFlyCamera/cBasicFlyCamera.h"
 #include "cLightManager.h"
+#include "cMesh.h"
 
 extern cBasicFlyCamera* g_pFlyCamera;
 
@@ -18,3 +19,8 @@ float getRand(void);
 // int x = 0;
 // extern int x = 0;
 extern int x;
+
+// Reutrn NULL if isn't found
+cMesh* g_pFindMeshByFriendlyName(std::string nameToFind);
+
+extern int g_SelectedLightIndex;	// = 0

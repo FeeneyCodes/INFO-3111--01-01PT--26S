@@ -17,6 +17,10 @@ public:
 
 	bool bIsWireFrame = false;
 
+	std::string friendlyName;	
+	bool bIsVisible = true;
+	bool bDoNotLight = false;
+
 	// Colours
 	glm::vec3 diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec3 specularRGB_P;	

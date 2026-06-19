@@ -10,6 +10,8 @@
 //extern glm::vec3 g_cameraEye;
 
 
+int g_SelectedLightIndex = 0;
+
 struct sMouseState
 {
     glm::ivec2 currentPositionXY = glm::ivec2(0, 0);
@@ -90,9 +92,63 @@ void handleKeyboardAsync(GLFWwindow* window)
     const float CAMERA_MOVE_SPEED = 5.0f;
     const float CAMERA_TURN_SPEED = 1.0f;
 
+    const float LIGHT_MOVE_SPEED = 0.1f;
+
     if ( isShiftDown(window) )
     {
-        // Keys move the target
+        // Move the selected light
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].position.z += LIGHT_MOVE_SPEED;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].position.z -= LIGHT_MOVE_SPEED;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].position.x += LIGHT_MOVE_SPEED;
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].position.x -= LIGHT_MOVE_SPEED;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].position.y += LIGHT_MOVE_SPEED;
+        }
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].position.y -= LIGHT_MOVE_SPEED;
+        }
+
+        // Also change the attenuation
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+        {
+            // Decrease the linear attenuation
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].attenuationLinear *= 0.99f;
+        }
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+        {
+            // Decrease the linear attenuation
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].attenuationLinear *= 1.01f;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+        {
+            // Decrease the linear attenuation
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].attenuationQuadratic *= 0.999f;
+        }
+        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+        {
+            // Decrease the linear attenuation
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].attenuationQuadratic *= 1.001f;
+        }
+
+
     }
 
     if (areAllModifiersUp(window))
