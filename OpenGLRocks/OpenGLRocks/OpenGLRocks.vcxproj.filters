@@ -54,6 +54,9 @@
     <ClCompile Include="DrawObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cLightHelper.cpp">
+      <Filter>LightManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">
@@ -76,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="globalOpenGLStuff.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cLightHelper.h">
+      <Filter>LightManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

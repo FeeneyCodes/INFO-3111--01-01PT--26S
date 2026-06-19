@@ -26,6 +26,7 @@
 
 #include "cShaderManager/cShaderManager.h"
 #include "cVAOManager/cVAOManager.h"
+#include "cLightHelper.h"
 
 #include "cMesh.h"
 
@@ -61,6 +62,8 @@ cVAOManager* g_pVAOManager = NULL;
 cBasicFlyCamera* g_pFlyCamera = NULL;
 
 cLightManager* g_pLightManager = NULL;
+
+bool g_pShowDebugLightSpheres = true;
 
 // note these are pointers
 std::vector< cMesh* > g_vec_pMeshes;
@@ -123,6 +126,8 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+    // This is the "typing" style callback
+    // PRESS, RELEASE, REPEAT
     glfwSetKeyCallback(window, key_callback);
     // And the mouse callbacks
     glfwSetCursorPosCallback(window, cursor_position_callback);   
@@ -218,9 +223,15 @@ int main(void)
      sModelDrawInfo terrainModel;
     ::g_pVAOManager->LoadModelIntoVAO("terrain_xyz_n_rgba_uv.ply", terrainModel, program);
 
+     sModelDrawInfo warehouseModel;
+    ::g_pVAOManager->LoadModelIntoVAO("Warehouse_xyz_n_rgba_UV (Blender Smart UV project).ply", warehouseModel, program);
+
+
+
     ::g_pVAOManager->setBasePath("assets/models/Dungeon_models/Additions");
-     sModelDrawInfo wellModel;
-    ::g_pVAOManager->LoadModelIntoVAO("SM_Env_Camp_Well_01.ply", wellModel, program);
+     sModelDrawInfo treeModel;
+//    ::g_pVAOManager->LoadModelIntoVAO("SM_Env_Camp_Well_01.ply", wellModel, program);
+    ::g_pVAOManager->LoadModelIntoVAO("SM_Env_Tree_Big_01.obj.ply", treeModel, program);
 
 
     ::g_pVAOManager->setBasePath("assets/models");
@@ -260,12 +271,19 @@ int main(void)
 
 
 
-    cMesh* pWell = new cMesh();
-    pWell->meshName = "SM_Env_Camp_Well_01.ply";
+    //cMesh* pWell = new cMesh();
+    //pWell->meshName = "SM_Env_Camp_Well_01.ply";
     //pWell->bIsWireFrame = true;
-    pWell->scale = 0.1f;
-    pWell->position.z = 50.0f;
-    ::g_vec_pMeshes.push_back(pWell);
+    //pWell->scale = 0.1f;
+    //pWell->position.z = 50.0f;
+    //::g_vec_pMeshes.push_back(pWell);
+
+    cMesh* pTree = new cMesh();
+    pTree->meshName = "SM_Env_Tree_Big_01.obj.ply";
+    pTree->diffuseRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+    pTree->scale = 0.1f;
+    pTree->position.z = 30.0f;
+    ::g_vec_pMeshes.push_back(pTree);
 
 
     cMesh* pTerrain = new cMesh();
@@ -314,11 +332,19 @@ int main(void)
     pBunny2->position.x = +10.0f;
     pBunny1->diffuseRGB = glm::vec3(0.3f, 0.7f, 0.6f);
 
+
+    cMesh* pWarehouse = new cMesh();
+    pWarehouse->meshName = "Warehouse_xyz_n_rgba_UV (Blender Smart UV project).ply";
+    pWarehouse->diffuseRGB = glm::vec3(0.7f, 0.7f, 0.7f);
+    pWarehouse->position = glm::vec3(0.0f, -15.0f, 0.0f);
+
+
     ::g_vec_pMeshes.push_back(pCow);
     ::g_vec_pMeshes.push_back(pPlane);
     ::g_vec_pMeshes.push_back(pBunny1);
     ::g_vec_pMeshes.push_back(pBunny2);
     ::g_vec_pMeshes.push_back(pCar);
+    ::g_vec_pMeshes.push_back(pWarehouse);
 
 
 
@@ -342,6 +368,18 @@ int main(void)
     ::g_pLightManager->myLights[0].attenuationConstant = 0.0f;
     ::g_pLightManager->myLights[0].attenuationLinear = 0.01f;
     ::g_pLightManager->myLights[0].attenuationQuadratic = 0.001f;
+
+
+    ::g_pLightManager->myLights[1].bIsOn = true;
+    ::g_pLightManager->myLights[1].lightType = cLight::POINT_LIGHT;
+    ::g_pLightManager->myLights[1].position = glm::vec3(-10.0f, -10.0f, 0.0f);
+    // Bright white light
+    ::g_pLightManager->myLights[1].diffuseRGBA = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+
+    ::g_pLightManager->myLights[1].attenuationConstant = 0.0f;
+    ::g_pLightManager->myLights[1].attenuationLinear = 0.02f;
+    ::g_pLightManager->myLights[1].attenuationQuadratic = 0.01f;
+
 
 
 
@@ -422,20 +460,85 @@ int main(void)
         }//for (std::vector<cMesh*>
 
 
+        // *******************************************************
         // DRAW DEBUG SPHERES AROUND LIGHTS
-        cMesh* pDebugSphere = g_pFindMeshByFriendlyName("DebugSphere1");
-        pDebugSphere->bIsVisible = true;
-        pDebugSphere->bIsWireFrame = true;
-        pDebugSphere->bDoNotLight = true;
+        if (::g_pShowDebugLightSpheres)
+        {
 
-        pDebugSphere->position = g_pLightManager->myLights[0].position;
-        pDebugSphere->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
-        pDebugSphere->scale = 0.2f;
+            cMesh* pDebugSphere = g_pFindMeshByFriendlyName("DebugSphere1");
+            pDebugSphere->bIsVisible = true;
+            pDebugSphere->bIsWireFrame = true;
+            pDebugSphere->bDoNotLight = true;
 
-        DrawObject(pDebugSphere, program);
+            pDebugSphere->position = g_pLightManager->myLights[::g_SelectedLightIndex].position;
+            pDebugSphere->diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
+            pDebugSphere->scale = 0.2f;
 
-        pDebugSphere->bIsVisible = false;
+            DrawObject(pDebugSphere, program);
 
+            float debugSphereBrightness = 0.5f;
+
+            cLightHelper theLightHelper;
+
+            // Draw a sphere that shows where the light is at 75% brightness
+            float distanceAt75PercentBrightness
+                = theLightHelper.calcApproxDistFromAtten(
+                    0.75f,   // 75% brightness
+                    0.01f,   // To within 0.01f
+                    100000.0f,  // Up to 100,000 units from the origin
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationConstant,
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationLinear,
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationQuadratic);
+
+            pDebugSphere->diffuseRGB = glm::vec3(debugSphereBrightness, debugSphereBrightness, 0.0f);
+            pDebugSphere->scale = distanceAt75PercentBrightness;
+            DrawObject(pDebugSphere, program);
+
+            float distanceAt50PercentBrightness
+                = theLightHelper.calcApproxDistFromAtten(
+                    0.50f,   // 75% brightness
+                    0.01f,   // To within 0.01f
+                    100000.0f,  // Up to 100,000 units from the origin
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationConstant,
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationLinear,
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationQuadratic);
+
+            pDebugSphere->diffuseRGB = glm::vec3(debugSphereBrightness, 0.0f, 0.0f);
+            pDebugSphere->scale = distanceAt50PercentBrightness;
+            DrawObject(pDebugSphere, program);
+
+
+            float distanceAt25PercentBrightness
+                = theLightHelper.calcApproxDistFromAtten(
+                    0.25f,   // 75% brightness
+                    0.01f,   // To within 0.01f
+                    100000.0f,  // Up to 100,000 units from the origin
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationConstant,
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationLinear,
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationQuadratic);
+
+            pDebugSphere->diffuseRGB = glm::vec3(0.0f, debugSphereBrightness, 0.0f);
+            pDebugSphere->scale = distanceAt25PercentBrightness;
+            DrawObject(pDebugSphere, program);
+
+
+            float distanceAt5PercentBrightness
+                = theLightHelper.calcApproxDistFromAtten(
+                    0.05f,   // 75% brightness
+                    0.01f,   // To within 0.01f
+                    100000.0f,  // Up to 100,000 units from the origin
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationConstant,
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationLinear,
+                    g_pLightManager->myLights[::g_SelectedLightIndex].attenuationQuadratic);
+
+            pDebugSphere->diffuseRGB = glm::vec3(0.0f, debugSphereBrightness, debugSphereBrightness);
+            pDebugSphere->scale = distanceAt5PercentBrightness;
+            DrawObject(pDebugSphere, program);
+
+
+            pDebugSphere->bIsVisible = false;
+        }//if (::g_pShowDebugLightSpheres)
+        // *******************************************************
 
 
         // Present what we drew to the screen..
@@ -456,6 +559,14 @@ int main(void)
             << eyePosition.x << ", "
             << eyePosition.y << ", "
             << eyePosition.z;
+
+        ssTitle << "  Light[" << ::g_SelectedLightIndex << "] @"
+            << ::g_pLightManager->myLights[::g_SelectedLightIndex].position.x << ", "
+            << ::g_pLightManager->myLights[::g_SelectedLightIndex].position.y << ", "
+            << ::g_pLightManager->myLights[::g_SelectedLightIndex].position.z << " "
+            << "Lin. Atten.: " << ::g_pLightManager->myLights[::g_SelectedLightIndex].attenuationLinear << " "
+            << "Quad. Atten.: " << ::g_pLightManager->myLights[::g_SelectedLightIndex].attenuationQuadratic;
+
 
         // str() makes it a std::string
         // c_str() makes it a char* ("C style string")
@@ -490,6 +601,50 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
+
+
+    // Check if ONLY shift is down
+    if ( (mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT)
+    {
+
+        // Use O & P to select the light
+        if (key == GLFW_KEY_O && action == GLFW_PRESS)
+        {
+            // Select previous light
+            ::g_SelectedLightIndex--;
+            // 
+            if (::g_SelectedLightIndex < 0)
+            {
+                ::g_SelectedLightIndex = cLightManager::NUMBEROF_LIGHTS - 1;
+            }
+        }
+        if (key == GLFW_KEY_P && action == GLFW_PRESS)
+        {
+            // Select next light
+            ::g_SelectedLightIndex++;
+            //
+            if (::g_SelectedLightIndex >= cLightManager::NUMBEROF_LIGHTS)
+            {
+                ::g_SelectedLightIndex = 0;
+            }
+        }
+
+        // Turn off and on the debug spheres
+        if (key == GLFW_KEY_9 && action == GLFW_PRESS)
+        {
+            // Turn on the debug spheres
+            ::g_pShowDebugLightSpheres = true;
+        }
+        if (key == GLFW_KEY_0 && action == GLFW_PRESS)
+        {
+            // Turn off the debug spheres
+            ::g_pShowDebugLightSpheres = false;
+        }
+
+
+    }//if ( (mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT)
+
+
 
     const float CAMERA_MOVE_SPEED = 0.1f;
 
