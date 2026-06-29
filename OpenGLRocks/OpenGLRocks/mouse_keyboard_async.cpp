@@ -148,6 +148,51 @@ void handleKeyboardAsync(GLFWwindow* window)
             ::g_pLightManager->myLights[::g_SelectedLightIndex].attenuationQuadratic *= 1.001f;
         }
 
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+        {
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].bIsOn = !::g_pLightManager->myLights[::g_SelectedLightIndex].bIsOn;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+        {
+            // Increase spotlight inner angle
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightInnerAngle += 0.25f;
+
+			if (::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightInnerAngle > 90.0f)
+			{
+				::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightInnerAngle = 90.0f;
+			}
+            
+
+			if (::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightInnerAngle > ::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightOuterAngle)
+			{
+				::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightOuterAngle = ::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightInnerAngle;
+			}
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+        {
+            // Decrease spotlight inner angle
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightInnerAngle -= 0.25f;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
+        {
+            // Increase spotlight outer angle
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightOuterAngle += 0.25f;
+
+			if (::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightOuterAngle > 90.0f)
+			{
+				::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightOuterAngle = 90.0f;
+			}
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
+        {
+            // Decrease spotlight outer angle
+            ::g_pLightManager->myLights[::g_SelectedLightIndex].spotLightOuterAngle -= 0.25f;
+        }
+
 
     }
 

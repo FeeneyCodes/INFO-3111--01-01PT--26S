@@ -357,34 +357,66 @@ int main(void)
     ::g_pLightManager = new cLightManager();
     ::g_pLightManager->SetupUniformShaderLocations(program);
 
-    // Set up the lights
-    ::g_pLightManager->myLights[0].bIsOn = true;
-    ::g_pLightManager->myLights[0].lightType = cLight::POINT_LIGHT;
-    // Place light 20 units above the origin
-    ::g_pLightManager->myLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
-    // Bright white light
-    ::g_pLightManager->myLights[0].diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    //// Set up the lights
+    //::g_pLightManager->myLights[0].bIsOn = true;
+    //::g_pLightManager->myLights[0].lightType = cLight::POINT_LIGHT;
+    //// Place light 20 units above the origin
+    //::g_pLightManager->myLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
+    //// Bright white light
+    //::g_pLightManager->myLights[0].diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-    ::g_pLightManager->myLights[0].attenuationConstant = 0.0f;
-    ::g_pLightManager->myLights[0].attenuationLinear = 0.01f;
-    ::g_pLightManager->myLights[0].attenuationQuadratic = 0.001f;
+    //::g_pLightManager->myLights[0].attenuationConstant = 0.0f;
+    //::g_pLightManager->myLights[0].attenuationLinear = 0.01f;
+    //::g_pLightManager->myLights[0].attenuationQuadratic = 0.001f;
 
 
-    ::g_pLightManager->myLights[1].bIsOn = true;
-    ::g_pLightManager->myLights[1].lightType = cLight::POINT_LIGHT;
-    ::g_pLightManager->myLights[1].position = glm::vec3(-10.0f, -10.0f, 0.0f);
-    // Bright white light
-    ::g_pLightManager->myLights[1].diffuseRGBA = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+    //::g_pLightManager->myLights[1].bIsOn = true;
+    //::g_pLightManager->myLights[1].lightType = cLight::POINT_LIGHT;
+    //::g_pLightManager->myLights[1].position = glm::vec3(-10.0f, -10.0f, 0.0f);
+    //// Bright white light
+    //::g_pLightManager->myLights[1].diffuseRGBA = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
 
-    ::g_pLightManager->myLights[1].attenuationConstant = 0.0f;
-    ::g_pLightManager->myLights[1].attenuationLinear = 0.02f;
-    ::g_pLightManager->myLights[1].attenuationQuadratic = 0.01f;
+    //::g_pLightManager->myLights[1].attenuationConstant = 0.0f;
+    //::g_pLightManager->myLights[1].attenuationLinear = 0.02f;
+    //::g_pLightManager->myLights[1].attenuationQuadratic = 0.01f;
 
+    // Setting up spot light
+    cLight* pSpotLight = &(::g_pLightManager->myLights[0]);
+    pSpotLight->lightType = cLight::SPOT_LIGHT;
+    pSpotLight->bIsOn = true;
+    pSpotLight->position = glm::vec3(0.0f, 20.0f, 0.0f);
+    pSpotLight->direction = glm::vec3(0.0f, -1.0f, 0.0f);
+    // NEVER FORGET TO NORMALIZE DIRECTION
+	pSpotLight->direction = glm::normalize(pSpotLight->direction);
+	pSpotLight->diffuseRGBA = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    pSpotLight->attenuationConstant = 0.1f;
+	pSpotLight->attenuationLinear = 0.01f;
+	pSpotLight->attenuationQuadratic = 0.001f;
+
+    // Cone angles
+    pSpotLight->spotLightInnerAngle = 15.0f;	// Degrees
+    pSpotLight->spotLightOuterAngle = 45.0f;
+
+	cLight* pFlashLight = &(::g_pLightManager->myLights[1]);
+	pFlashLight->lightType = cLight::SPOT_LIGHT;
+	pFlashLight->bIsOn = true;
 
 
 
     while ( ! glfwWindowShouldClose(window) )
     {
+        // Flashlight that follows the camera
+        pFlashLight->position = g_pFlyCamera->getEyeLocation();
+
+        glm::vec3 cameraLookAt = g_pFlyCamera->getTargetLocation();
+        glm::vec3 cameraDirection = cameraLookAt - g_pFlyCamera->getEyeLocation();
+        pFlashLight->direction = glm::normalize(cameraDirection);
+
+        pFlashLight->attenuationConstant = 0.1f;
+        pFlashLight->attenuationLinear = 0.01f;
+        pFlashLight->attenuationQuadratic = 0.001f;
+
 
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
