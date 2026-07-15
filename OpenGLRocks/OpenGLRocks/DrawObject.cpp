@@ -93,6 +93,10 @@ void DrawObject(cMesh* pTheMesh, GLuint program)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
+	GLint alpha_UL = glGetUniformLocation(program, "alphaTransparency");
+
+    glUniform1f(alpha_UL, pTheMesh->alphaTransparency);
+
 
     // Get the uniform for the colour
     // uniform vec3 theColour;

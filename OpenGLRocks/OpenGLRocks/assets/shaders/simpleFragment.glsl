@@ -12,6 +12,8 @@ uniform vec3 theColour;
 
 uniform vec3 eyeLocation;
 
+uniform float alphaTransparency;
+
 // There is no bool, it's really a float
 uniform bool bDoNotLight;
 
@@ -213,7 +215,7 @@ vec4 calcualteLightContrib( vec3 vertexMaterialColour, vec3 vertexNormal,
 		finalObjectColour.rgb += (vertexMaterialColour.rgb * lightDiffuseContrib.rgb)
 								  + (vertexSpecular.rgb * lightSpecularContrib.rgb );
 	}//for(intindex=0...
-	finalObjectColour.a = 1.0f;
+	finalObjectColour.a = alphaTransparency;
 	
 	return finalObjectColour;
 }

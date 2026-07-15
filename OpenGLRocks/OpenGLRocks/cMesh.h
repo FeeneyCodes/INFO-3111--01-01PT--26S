@@ -21,6 +21,8 @@ public:
 	bool bIsVisible = true;
 	bool bDoNotLight = false;
 
+	float alphaTransparency = 1.0f;	// 0.0f = invisible, 1.0f = opaque
+
 	// Colours
 	glm::vec3 diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec3 specularRGB_P;	

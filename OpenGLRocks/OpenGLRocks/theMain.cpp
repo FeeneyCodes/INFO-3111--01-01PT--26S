@@ -305,12 +305,7 @@ int main(void)
     pCar->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
 
     // Add the models we want to draw
-    cMesh* pCow = new cMesh();
-    pCow->meshName = "cow_xyz_n_rgba_uv.ply";
-    pCow->position = glm::vec3(0.0f, 0.0f, -2.0f);
-    pCow->scale = 1.0f / 10.0f;
-    pCow->bIsWireFrame = true;
-    pCow->diffuseRGB = glm::vec3(0.0f, 0.0f, 1.0f);
+
 
 
     cMesh* pPlane = new cMesh();
@@ -339,12 +334,25 @@ int main(void)
     pWarehouse->position = glm::vec3(0.0f, -15.0f, 0.0f);
 
 
-    ::g_vec_pMeshes.push_back(pCow);
+    
     ::g_vec_pMeshes.push_back(pPlane);
     ::g_vec_pMeshes.push_back(pBunny1);
     ::g_vec_pMeshes.push_back(pBunny2);
     ::g_vec_pMeshes.push_back(pCar);
     ::g_vec_pMeshes.push_back(pWarehouse);
+
+    for (float z = -100.0f; z < 101.0f; z += 10.0f)
+    {
+        cMesh* pCow = new cMesh();
+        pCow->meshName = "cow_xyz_n_rgba_uv.ply";
+        pCow->position = glm::vec3(0.0f, 0.0f, z);
+        pCow->scale = 1.0f;
+        pCow->bIsWireFrame = false;
+        pCow->diffuseRGB = glm::vec3(getRand(), getRand(), getRand());
+        pCow->alphaTransparency = 0.6f;
+
+        ::g_vec_pMeshes.push_back(pCow);
+    }
 
 
 
@@ -401,8 +409,15 @@ int main(void)
 	cLight* pFlashLight = &(::g_pLightManager->myLights[1]);
 	pFlashLight->lightType = cLight::SPOT_LIGHT;
 	pFlashLight->bIsOn = true;
+    
+
+    pFlashLight->attenuationConstant = 0.1f;
+    pFlashLight->attenuationLinear = 0.01f;
+    pFlashLight->attenuationQuadratic = 0.001f;
 
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     while ( ! glfwWindowShouldClose(window) )
     {
@@ -413,9 +428,6 @@ int main(void)
         glm::vec3 cameraDirection = cameraLookAt - g_pFlyCamera->getEyeLocation();
         pFlashLight->direction = glm::normalize(cameraDirection);
 
-        pFlashLight->attenuationConstant = 0.1f;
-        pFlashLight->attenuationLinear = 0.01f;
-        pFlashLight->attenuationQuadratic = 0.001f;
 
 
         int width, height;
@@ -476,20 +488,56 @@ int main(void)
         // Copy light info to shader for this frame
         ::g_pLightManager->CopyLightInfoToShader(program);
 
+        std::vector< cMesh* > vec_transparentMeshes;
+        std::vector< cMesh* > vec_SolidMeshes;
 
-        // Now draw all the objects in the scene vector
+
+        // Sort meshes from transparent and solid into 2 new lists
         for (std::vector<cMesh*>::iterator it_pMesh = ::g_vec_pMeshes.begin();
-             it_pMesh != ::g_vec_pMeshes.end(); 
+            it_pMesh != ::g_vec_pMeshes.end();
+            it_pMesh++)
+        {
+
+            cMesh* pTheMesh = *it_pMesh;
+
+            if (pTheMesh->alphaTransparency < 1.0f) 
+            {
+                vec_transparentMeshes.push_back(pTheMesh);
+            }
+            else 
+            {
+                vec_SolidMeshes.push_back(pTheMesh);
+            }
+
+        }
+
+
+        // Now draw all the solid objects first
+        for (std::vector<cMesh*>::iterator it_pMesh = vec_SolidMeshes.begin();
+             it_pMesh != vec_SolidMeshes.end();
              it_pMesh++)
         {
 
             cMesh* pTheMesh = *it_pMesh;            // Gives us pointer to mesh
 
-            // TODO:
             DrawObject(pTheMesh, program);
 
-            
-        }//for (std::vector<cMesh*>
+        }
+
+        // Now, sort the transparent meshes by distance from camera
+        // TODO: Sort transparent object from farthest to closest to camera
+
+
+        // Draw all trasnparent meshes, they now should be sorted
+        for (std::vector<cMesh*>::iterator it_pMesh = vec_transparentMeshes.begin();
+            it_pMesh != vec_transparentMeshes.end();
+            it_pMesh++)
+        {
+     
+            cMesh* pTheMesh = *it_pMesh;           
+
+            DrawObject(pTheMesh, program);
+        }
 
 
         // *******************************************************
@@ -623,8 +671,6 @@ float getRand(void)
 {
     return ((float)rand()) / RAND_MAX;
 }
-
-
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
