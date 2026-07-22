@@ -1,7 +1,6 @@
 ply
 format ascii 1.0
 comment VCGLIB generated
-comment TextureFile Sydney_Sweeney.bmp
 element vertex 55621
 property float x
 property float y

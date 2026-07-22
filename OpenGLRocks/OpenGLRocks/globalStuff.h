@@ -4,11 +4,14 @@
 
 #include "cBasicFlyCamera/cBasicFlyCamera.h"
 #include "cLightManager.h"
+#include "cBasicTextureManager/cBasicTextureManager.h"
 #include "cMesh.h"
 
 extern cBasicFlyCamera* g_pFlyCamera;
 
 extern cLightManager* g_pLightManager;
+
+extern cBasicTextureManager* g_pTextureManager;
 
 // Only function signatures
 float getRand(void);

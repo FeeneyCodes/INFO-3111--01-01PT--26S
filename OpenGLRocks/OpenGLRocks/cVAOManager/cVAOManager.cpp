@@ -174,6 +174,8 @@ bool cVAOManager::LoadModelIntoVAO(
 	                       sizeof(sVert),
 	                       (void*)offsetof(sVert, vertUVx2.x));
 
+
+
 	// Now that all the parts are set up, set the VAO to zero
 	glBindVertexArray(0);
 

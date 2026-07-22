@@ -29,6 +29,7 @@
 #include "cLightHelper.h"
 
 #include "cMesh.h"
+#include "cBasicTextureManager/cBasicTextureManager.h"
 
 struct Vertex
 {
@@ -62,6 +63,8 @@ cVAOManager* g_pVAOManager = NULL;
 cBasicFlyCamera* g_pFlyCamera = NULL;
 
 cLightManager* g_pLightManager = NULL;
+
+cBasicTextureManager* g_pTextureManager = NULL;
 
 bool g_pShowDebugLightSpheres = true;
 
@@ -194,6 +197,32 @@ int main(void)
 
     glUseProgram(program);
 
+    // Texture system setup
+
+	GLint texture0_UL = glGetUniformLocation(program, "texture0");
+    GLint bUseTexture_UL = glGetUniformLocation(program, "bUseTexture");
+
+	// bind the texture to texture unit 0 (do this once)
+	glUniform1i(texture0_UL, 0);	// Texture unit 0)
+
+    // create texture manager
+	::g_pTextureManager = new cBasicTextureManager();
+	::g_pTextureManager->SetBasePath("assets/textures");
+
+    bool success = g_pTextureManager->Create2DTextureFromBMPFile("Dungeons_2_Texture_01_A.bmp", true);
+
+    if (success)
+    {
+		std::cout << "Loaded the texture OK" << std::endl;
+        GLuint testID = g_pTextureManager->getTextureIDFromName("Dungeons_2_Texture_01_A.bmp");
+        std::cout << "Texture ID: " << testID << std::endl;  // Should be non-zero
+    }
+    else
+    {
+		std::cout << "Didn't load the texture" << std::endl;
+    }
+
+
 
     // Load the models
     ::g_pVAOManager = new cVAOManager();
@@ -222,6 +251,10 @@ int main(void)
 
      sModelDrawInfo terrainModel;
     ::g_pVAOManager->LoadModelIntoVAO("terrain_xyz_n_rgba_uv.ply", terrainModel, program);
+
+    sModelDrawInfo drawfModel;
+    ::g_pVAOManager->LoadModelIntoVAO("SM_Prop_DeadBody_Dwarf_01.ply", drawfModel, program);
+   
 
      sModelDrawInfo warehouseModel;
     ::g_pVAOManager->LoadModelIntoVAO("Warehouse_xyz_n_rgba_UV (Blender Smart UV project).ply", warehouseModel, program);
@@ -325,7 +358,7 @@ int main(void)
     pBunny2->meshName = "bun_zipper_xyz_n_rgba_uv.ply";
     pBunny2->scale = 5.0f;
     pBunny2->position.x = +10.0f;
-    pBunny1->diffuseRGB = glm::vec3(0.3f, 0.7f, 0.6f);
+    pBunny2->diffuseRGB = glm::vec3(0.3f, 0.7f, 0.6f);
 
 
     cMesh* pWarehouse = new cMesh();
@@ -333,15 +366,21 @@ int main(void)
     pWarehouse->diffuseRGB = glm::vec3(0.7f, 0.7f, 0.7f);
     pWarehouse->position = glm::vec3(0.0f, -15.0f, 0.0f);
 
+	cMesh* pDwarf = new cMesh();
+    pDwarf->meshName = "SM_Prop_DeadBody_Dwarf_01.ply";
+    pDwarf->scale = 0.1f;
+    pDwarf->position = glm::vec3(0.0f, -5.0f, 0.0f);
+    pDwarf->bUseTexture = true;
+	pDwarf->textureName = "Dungeons_2_Texture_01_A.bmp";
+    pDwarf->bDoNotLight = true;
 
-    
-    ::g_vec_pMeshes.push_back(pPlane);
-    ::g_vec_pMeshes.push_back(pBunny1);
-    ::g_vec_pMeshes.push_back(pBunny2);
-    ::g_vec_pMeshes.push_back(pCar);
+
+
+
+    ::g_vec_pMeshes.push_back(pDwarf);
     ::g_vec_pMeshes.push_back(pWarehouse);
 
-    for (float z = -100.0f; z < 101.0f; z += 10.0f)
+   /* for (float z = -100.0f; z < 101.0f; z += 10.0f)
     {
         cMesh* pCow = new cMesh();
         pCow->meshName = "cow_xyz_n_rgba_uv.ply";
@@ -352,7 +391,7 @@ int main(void)
         pCow->alphaTransparency = 0.6f;
 
         ::g_vec_pMeshes.push_back(pCow);
-    }
+    }*/
 
 
 
@@ -520,6 +559,31 @@ int main(void)
 
             cMesh* pTheMesh = *it_pMesh;            // Gives us pointer to mesh
 
+            if (pTheMesh->bUseTexture && !pTheMesh->textureName.empty())
+            {
+                //get the textureID
+                GLuint textureID = ::g_pTextureManager->getTextureIDFromName(pTheMesh->textureName);
+
+                if (textureID != 0)
+                {
+                    // tell the shader to "use textues"
+					glUniform1i(bUseTexture_UL, GL_TRUE);
+
+                    //bind the texture
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, textureID);
+                }
+                else
+                {
+                    // texture not foun, so use solid colour
+                    glUniform1i(bUseTexture_UL, GL_FALSE);
+                }
+            }
+            else 
+            {
+                glUniform1i(bUseTexture_UL, GL_FALSE);
+            }
+
             DrawObject(pTheMesh, program);
 
         }
@@ -534,7 +598,32 @@ int main(void)
             it_pMesh++)
         {
      
-            cMesh* pTheMesh = *it_pMesh;           
+            cMesh* pTheMesh = *it_pMesh;  
+
+            if (pTheMesh->bUseTexture && !pTheMesh->textureName.empty())
+            {
+                //get the textureID
+                GLuint textureID = ::g_pTextureManager->getTextureIDFromName(pTheMesh->textureName);
+
+                if (textureID != 0)
+                {
+                    // tell the shader to "use textues"
+                    glUniform1i(bUseTexture_UL, GL_TRUE);
+
+                    //bind the texture
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, textureID);
+                }
+                else
+                {
+                    // texture not foun, so use solid colour
+                    glUniform1i(bUseTexture_UL, GL_FALSE);
+                }
+            }
+            else
+            {
+                glUniform1i(bUseTexture_UL, GL_FALSE);
+            }
 
             DrawObject(pTheMesh, program);
         }

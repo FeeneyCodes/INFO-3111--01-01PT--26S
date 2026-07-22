@@ -25,7 +25,10 @@ public:
 
 	// Colours
 	glm::vec3 diffuseRGB = glm::vec3(1.0f, 1.0f, 1.0f);
-	glm::vec3 specularRGB_P;	
+	glm::vec3 specularRGB_P;
+
+	bool bUseTexture = false;
+	std::string textureName = "";
 
 	// std::string textures[8];
 	//std::vector< cMesh* > m_vec_pChildMeshes;

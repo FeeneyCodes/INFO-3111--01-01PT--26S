@@ -17,6 +17,10 @@ uniform float alphaTransparency;
 // There is no bool, it's really a float
 uniform bool bDoNotLight;
 
+// Texture uniforms
+uniform sampler2D texture0; // the texture image
+uniform bool bUseTexture; // should we use the texture or not
+
 struct sLight
 {
 	vec4 position;	// xyz, ignoring w (4th parameter)	
@@ -56,6 +60,13 @@ void main()
 	vertexColour.rgb *= 0.00001f;	// Effectively gone
 	vertexColour.rgb += theColour.rgb;
     //fragment = vec4(vertexColour, 1.0);
+
+	// Apply texture if we are using it
+	if (bUseTexture)
+	{
+		vec4 textureColour = texture(texture0, vVertexUVx2.xy);
+		vertexColour = textureColour.rgb;
+	}
 	
 	if ( bDoNotLight )
 	{
