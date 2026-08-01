@@ -47,12 +47,27 @@ const int DIRECTIONAL_LIGHT_TYPE = 2;
 vec4 calcualteLightContrib( vec3 vertexMaterialColour, vec3 vertexNormal, 
                             vec3 vertexWorldPos, vec4 vertexSpecular );
 
+uniform bool bIsSkyBox; // Check if this is a skybox mesh
+uniform samplerCube skyboxTexture; // The cubemap texture for the skybox
+
 void main()
 {
 // in vec4 vModelColour;
 // in vec4 vNormal;
 // in vec4 vWorldPosition;
 // in vec4 vVertexUVx2;
+
+	if (bIsSkyBox)
+	{
+		// Sample using direction from eye to vertex
+		vec3 viewDirection = normalize(vWorldPosition.xyz - eyeLocation);
+		vec3 vertColour = texture(skyboxTexture, viewDirection).rgb;
+    
+		fragment.rgb = vertColour;
+		fragment.a = 1.0f;
+    
+		return;
+	}
 
 	// This is the colour of the pixel
 	vec3 vertexColour = vModelColour.rgb;

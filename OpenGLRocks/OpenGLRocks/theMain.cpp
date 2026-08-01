@@ -222,6 +222,17 @@ int main(void)
 		std::cout << "Didn't load the texture" << std::endl;
     }
 
+	::g_pTextureManager->SetBasePath("assets/textures/CubeMaps");
+
+    std::string errorMessage = "";
+    if (!::g_pTextureManager->CreateCubeTextureFromBMPFiles("SunnyDay",
+        "TropicalSunnyDayRight2048.bmp", "TropicalSunnyDayLeft2048.bmp",
+        "TropicalSunnyDayUp2048.bmp", "TropicalSunnyDayDown2048.bmp",
+        "TropicalSunnyDayBack2048.bmp", "TropicalSunnyDayFront2048.bmp",
+        true, errorMessage))
+    {
+        std::cout << "Didn't load sunny day texture because: " << errorMessage << std::endl;
+    }
 
 
     // Load the models
@@ -281,6 +292,8 @@ int main(void)
     ::g_pVAOManager->LoadModelIntoVAO("Isoshphere_smooth_inverted_normals_xyz_n_rgba_uv.ply", 
                                       debugSphere03Model, program);
 
+
+
     cMesh* pDebugSphere01 = new cMesh();
     pDebugSphere01->meshName = "Isoshphere_flat_3div_xyz_n_rgba_uv.ply";
     pDebugSphere01->friendlyName = "DebugSphere1";
@@ -298,6 +311,7 @@ int main(void)
     pDebugSphere03->friendlyName = "DebugSphere3";
     pDebugSphere03->bIsVisible = false;
 
+ 
     g_vec_pMeshes.push_back(pDebugSphere01);
     g_vec_pMeshes.push_back(pDebugSphere02);
     g_vec_pMeshes.push_back(pDebugSphere03);
@@ -310,6 +324,16 @@ int main(void)
     //pWell->scale = 0.1f;
     //pWell->position.z = 50.0f;
     //::g_vec_pMeshes.push_back(pWell);
+
+    cMesh* pSkyBox = new cMesh();
+    pSkyBox->meshName = "Isoshphere_smooth_inverted_normals_xyz_n_rgba_uv.ply";
+    pSkyBox->scale = 500.0f;
+    pSkyBox->textureName = "SunnyDay";
+    pSkyBox->bUseTexture = true;
+    pSkyBox->bIsSkyBox = true;
+    pSkyBox->bDoNotLight = true;
+    pSkyBox->bIsVisible = true;
+    ::g_vec_pMeshes.push_back(pSkyBox);
 
     cMesh* pTree = new cMesh();
     pTree->meshName = "SM_Env_Tree_Big_01.obj.ply";
@@ -559,6 +583,9 @@ int main(void)
 
             cMesh* pTheMesh = *it_pMesh;            // Gives us pointer to mesh
 
+			GLint bIsSkyBox_UL = glGetUniformLocation(program, "bIsSkyBox");
+            glUniform1i(bIsSkyBox_UL, GL_FALSE);
+
             if (pTheMesh->bUseTexture && !pTheMesh->textureName.empty())
             {
                 //get the textureID
@@ -566,12 +593,28 @@ int main(void)
 
                 if (textureID != 0)
                 {
+                 
                     // tell the shader to "use textues"
 					glUniform1i(bUseTexture_UL, GL_TRUE);
 
-                    //bind the texture
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, textureID);
+                    if (pTheMesh->bIsSkyBox)
+                    {
+                        // bind texture as cube map
+						glUniform1i(bIsSkyBox_UL, GL_TRUE);
+						GLint skyBoxTexture_UL = glGetUniformLocation(program, "skyboxTexture");
+
+                        glActiveTexture(GL_TEXTURE1);
+						glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+                        glUniform1i(skyBoxTexture_UL, 1);
+                    }
+                    else
+                    {
+                 
+                        //bind the texture its just 2D
+                        glActiveTexture(GL_TEXTURE0);
+                        glBindTexture(GL_TEXTURE_2D, textureID);
+                    }
+             
                 }
                 else
                 {

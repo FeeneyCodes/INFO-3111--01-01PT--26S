@@ -30,6 +30,8 @@ public:
 	bool bUseTexture = false;
 	std::string textureName = "";
 
+	bool bIsSkyBox = false;
+
 	// std::string textures[8];
 	//std::vector< cMesh* > m_vec_pChildMeshes;
 };
